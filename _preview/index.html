@@ -448,10 +448,10 @@ h1.scenetitle{font-family:'Spectral',Georgia,serif;font-weight:400;font-size:24p
 .choicelbl{display:flex;align-items:center;gap:12px;margin:32px 20px 14px}
 .choicelbl span{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--text)}
 .choicelbl i{flex:1;height:1px;background:linear-gradient(90deg, rgba(232,225,210,.22), transparent)}
-.choices{padding:0 20px;display:flex;flex-direction:column;gap:11px}
+.choices{padding:0 20px;display:flex;flex-direction:column;gap:11px;pointer-events:auto}
 .choice{display:flex;flex-direction:column;gap:9px;width:100%;text-align:left;padding:15px 17px;border:1px solid var(--border);
   border-radius:12px;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(232,225,210,.04);position:relative;
-  transition:border-color .18s ease,background .18s ease,transform .14s ease,box-shadow .18s ease;cursor:pointer}
+  transition:border-color .18s ease,background .18s ease,transform .14s ease,box-shadow .18s ease;cursor:pointer;pointer-events:auto}
 .choice:hover{border-color:rgba(183,154,86,.45);background:var(--surface-hi);transform:translateY(-1px);
   box-shadow:0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(232,225,210,.06)}
 .choice:active{transform:scale(0.985);background:rgba(183,154,86,.08);border-color:var(--gold)}
@@ -1970,7 +1970,9 @@ function renderScene(id){
 
   $("sChoiceLbl").textContent = "Твой шаг";
 
-  const box = $("sChoices"); box.innerHTML="";
+  const box = $("sChoices");
+  box.style.pointerEvents = "";
+  box.innerHTML = "";
   sc.choices.forEach((ch,i)=>{
     const req = meetsReq(ch);
     const b = document.createElement("button");
@@ -1987,7 +1989,10 @@ function renderScene(id){
       box.style.pointerEvents="none";
       b.classList.add("sel");
       if(navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
-      setTimeout(()=>choose(ch), 160);
+      setTimeout(()=>{
+        box.style.pointerEvents = "";
+        choose(ch);
+      }, 160);
     };
     box.appendChild(b);
   });
@@ -1997,6 +2002,7 @@ function renderScene(id){
 
 /* ============ ВЫБОР И ПОСЛЕДСТВИЯ ============ */
 function choose(ch){
+  if($("sChoices")) $("sChoices").style.pointerEvents = "";
   lastChoice = ch;
   if(S.log.length){ S.log[S.log.length-1].choice = ch.text; }
   const deltas = {};
@@ -2108,12 +2114,28 @@ function renderEcho(ch, deltas, rankUp, riskCalmed, dynamicLead){
 }
 
 function afterEcho(){
+  if($("sChoices")) $("sChoices").style.pointerEvents = "";
   const end = checkFailEnding();
   if(end) return showEnding(end);
 
   const sc = currentScene;
   let nextId = sc.next;
-  if(sc.isRandomEvent){ nextId = S.pendingNext; S.pendingNext = null; }
+  if(sc.isRandomEvent){
+    if(!S.pendingNext){
+      if(sc.chapters && sc.chapters.includes(2) && !sc.chapters.includes(1)){
+        nextId = "s8_grain";
+      } else if(sc.chapters && sc.chapters.includes(3) && !sc.chapters.includes(2)){
+        nextId = "s14a_guillaume_trust";
+      } else if(sc.chapters && sc.chapters.includes(4)){
+        nextId = "s20_mill_proposal";
+      } else {
+        nextId = "s3_question";
+      }
+    } else {
+      nextId = S.pendingNext;
+    }
+    S.pendingNext = null;
+  }
   if(sc.id==="s8_grain") nextId = S.flags.has("toma_trusted") ? "s9a_toma_field" : "s9b_no_toma";
   if(sc.id==="s13_ledger") nextId = S.flags.has("suspicion_guillaume") ? "s14b_guillaume_watch" : "s14a_guillaume_trust";
   if(sc.id==="s14a_guillaume_trust" || sc.id==="s14b_guillaume_watch") nextId = S.flags.has("toma_trusted") ? "s15a_toma_scribe" : "s15b_toma_outside";
@@ -2129,7 +2151,7 @@ function afterEcho(){
 
 function pickRandomEvent(nextSc){
   if(!nextSc || nextSc.sliceEnd) return null;
-  if(nextSc.id === "s6_finale1" || nextSc.id === "s12_finale") return null;
+  if(nextSc.id === "s6_gate" || nextSc.id === "s12_finale" || nextSc.id === "s19_finale3" || nextSc.id === "s26_finale4") return null;
 
   const chap = nextSc.chapter || (nextSc.id.startsWith("s7") || nextSc.id.startsWith("s8") || nextSc.id.startsWith("s9") || nextSc.id.startsWith("s10") || nextSc.id.startsWith("s11") ? 2 : 1);
 
@@ -2141,18 +2163,20 @@ function pickRandomEvent(nextSc){
     return evObj && evObj.chapters.includes(chap);
   }).length;
 
-  const isTriggerTurn = (chap === 1 && (currentScene.id === "s2_well" || currentScene.id === "s3_scriptorium"))
-                     || (chap === 2 && (currentScene.id === "s8_grain" || currentScene.id.startsWith("s9")));
+  const isTriggerTurn = (chap === 1 && (currentScene.id === "s2_well" || currentScene.id === "s3_question"))
+                     || (chap === 2 && (currentScene.id === "s8_grain" || currentScene.id.startsWith("s9")))
+                     || (chap === 3 && (currentScene.id === "s13_ledger" || currentScene.id.startsWith("s14") || currentScene.id.startsWith("s15")))
+                     || (chap === 4 && (currentScene.id === "s22_site_choice" || currentScene.id === "s23_labor"));
 
   if(eventsInChap === 0 && isTriggerTurn){
     const ev = pool[Math.floor(Math.random() * pool.length)];
-    ev.chapterTitle = "Весть из внешнего мира";
+    ev.chapterTitle = ev.chapterTitle || "Весть из внешнего мира";
     return ev;
   }
 
   if(Math.random() > 0.25) return null;
   const ev = pool[Math.floor(Math.random() * pool.length)];
-  ev.chapterTitle = "Весть из внешнего мира";
+  ev.chapterTitle = ev.chapterTitle || "Весть из внешнего мира";
   return ev;
 }
 
