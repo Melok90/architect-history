@@ -48,8 +48,9 @@ button{touch-action:manipulation;font:inherit;background:none;border:none;color:
     box-shadow:0 0 50px rgba(0,0,0,.85),0 0 0 1px var(--border)}
 }
 .screen{display:none;min-height:100dvh;flex-direction:column;padding-bottom:calc(90px + env(safe-area-inset-bottom))}
-.screen.active{display:flex;animation:fadeIn .45s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.screen.active{display:flex;animation:fadeIn .32s cubic-bezier(.2,.6,.3,1) both}
+.screen.dissolving-out{opacity:0;transform:translateY(-5px);transition:opacity .16s ease, transform .16s ease;pointer-events:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* виньетка — комната освещена одной точкой, не залита светом */
 .vign{position:fixed;inset:0;pointer-events:none;z-index:50;
@@ -458,9 +459,17 @@ h1.scenetitle{font-family:'Spectral',Georgia,serif;font-weight:400;font-size:24p
 .choice.sel{border-color:var(--gold-bright);background:var(--surface-hi2);box-shadow:0 0 20px rgba(183,154,86,.3);transform:scale(0.99)}
 .choice.locked{opacity:.5;border-style:dashed;border-color:rgba(61,87,72,.45);background:rgba(11,19,15,.45);cursor:not-allowed;pointer-events:none}
 .choice .cidx{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:'IBM Plex Sans',sans-serif}
+.choice .cidx-left{display:inline-flex;align-items:center;gap:8px}
 .choice .cnum{font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--text-faint);font-variant-numeric:tabular-nums}
-.choice .ctag{font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);
-  padding:2px 7px;border-radius:4px;background:rgba(183,154,86,.08);border:1px solid rgba(183,154,86,.2)}
+.choice .ctag{font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
+  padding:2px 7px;border-radius:4px;background:rgba(183,154,86,.08);border:1px solid rgba(183,154,86,.2);line-height:1.2}
+.choice .ctag.tag-vision{color:#e5c158;background:rgba(229,193,88,.1);border-color:rgba(229,193,88,.28)}
+.choice .ctag.tag-authority{color:#8da4c4;background:rgba(141,164,196,.1);border-color:rgba(141,164,196,.25)}
+.choice .ctag.tag-experience{color:#a3bc94;background:rgba(163,188,148,.1);border-color:rgba(163,188,148,.25)}
+.choice .ctag.tag-direct{color:#e07a73;background:rgba(224,122,115,.12);border-color:rgba(224,122,115,.3)}
+.choice .ctag.tag-daring{color:#d3bc7e;background:rgba(211,188,126,.1);border-color:rgba(211,188,126,.25)}
+.choice .ctag.tag-care{color:#8fba8f;background:rgba(143,186,143,.1);border-color:rgba(143,186,143,.22)}
+.choice .ctag.tag-restraint{color:#a6ac9b;background:rgba(166,172,155,.08);border-color:rgba(166,172,155,.18)}
 .choice .cact{display:inline-flex;align-items:center;color:var(--text-faint);transition:transform .18s ease,color .18s ease}
 .choice:hover .cact{color:var(--gold);transform:translateX(2px)}
 .choice .cact svg{width:15px;height:15px}
@@ -471,8 +480,7 @@ h1.scenetitle{font-family:'Spectral',Georgia,serif;font-weight:400;font-size:24p
 .choice .req svg{width:12px;height:12px;flex:none}
 
 /* ============ ЭХО РЕШЕНИЯ (экран последствий) ============ */
-.echo{flex:1;display:flex;flex-direction:column;animation:dissolveIn .42s cubic-bezier(.2,.6,.3,1) both}
-@keyframes dissolveIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.echo{flex:1;display:flex;flex-direction:column}
 .echohead{display:flex;flex-direction:column;gap:12px;padding:calc(16px + var(--safe-top)) 20px 16px}
 .echo .chapter{padding:0}
 .echo h1{padding:0;font-family:'Spectral',Georgia,serif;font-weight:400;font-size:28px;color:var(--text);line-height:1.2}
@@ -693,7 +701,10 @@ nav button.on{color:var(--gold)}
 
 /* Модальные окна реликвий и портрета */
 .relic-dlg-box{max-width:360px;text-align:left;padding:22px 20px}
-.relic-dlg-badge{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.relic-dlg-top{display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px}
+.relic-dlg-icon{width:36px;height:36px;border-radius:8px;background:rgba(183,154,86,.08);border:1px solid rgba(183,154,86,.25);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+.relic-dlg-icon svg{width:20px;height:20px}
+.relic-dlg-badge{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0}
 .relic-dlg-sub{font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--text-faint);margin-top:-4px;margin-bottom:12px}
 .relic-dlg-quote{font-family:'Spectral',Georgia,serif;font-size:13px;font-style:italic;color:var(--gold);background:rgba(183,154,86,.06);border-left:2px solid var(--gold);padding:8px 10px;border-radius:4px;line-height:1.45;margin-bottom:18px}
 .portrait-dlg-box{max-width:360px;text-align:center;padding:22px 20px}
@@ -917,7 +928,7 @@ nav button.on{color:var(--gold)}
         <div class="rt" id="eRankTitle"></div>
         <div class="rd" id="eRankDesc"></div>
       </div>
-      <button class="btn top" onclick="afterEcho()">Продолжить<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></button>
+      <button class="btn top" onclick="advanceFromEcho()">Продолжить<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></button>
     </div>
   </section>
 
@@ -966,7 +977,10 @@ nav button.on{color:var(--gold)}
   <!-- Модальное окно реликвий -->
   <div class="dlgwrap" id="relicDlg" onclick="if(event.target===this)closeRelicDlg()">
     <div class="dlg relic-dlg-box">
-      <div class="relic-dlg-badge" id="relicDlgType">Реликвия</div>
+      <div class="relic-dlg-top">
+        <div class="relic-dlg-icon" id="relicDlgIcon"></div>
+        <div class="relic-dlg-badge" id="relicDlgType">Реликвия</div>
+      </div>
       <div class="dt" id="relicDlgTitle">Название</div>
       <div class="relic-dlg-sub" id="relicDlgSub">Свойство</div>
       <div class="dm" id="relicDlgDesc" style="text-align:left;font-size:13px;line-height:1.55;margin-bottom:12px">Описание</div>
@@ -1921,6 +1935,15 @@ function choiceTag(ch){
   if(ch.risk<0) return "Осторожность";
   return "Сдержанность";
 }
+function choiceTagClass(ch){
+  if(ch.lang===1) return "tag-vision";
+  if(ch.lang===2) return "tag-authority";
+  if(ch.lang===3) return "tag-experience";
+  if(ch.lang===4) return "tag-direct";
+  if(ch.risk>0) return "tag-daring";
+  if(ch.risk<0) return "tag-care";
+  return "tag-restraint";
+}
 
 function renderScene(id){
   const sc = GAME.scenes[id];
@@ -1944,7 +1967,6 @@ function renderScene(id){
     if($("eventBanner")) $("eventBanner").style.display = "none";
   }
 
-  if($("hTitle")) $("hTitle").textContent = sc.title;
   $("hYear").textContent = S.year;
   $("hTurn").textContent = "Ход "+(S.log.length+1);
 
@@ -1975,10 +1997,15 @@ function renderScene(id){
   box.innerHTML = "";
   sc.choices.forEach((ch,i)=>{
     const req = meetsReq(ch);
+    const tag = choiceTag(ch);
+    const tagCls = choiceTagClass(ch);
     const b = document.createElement("button");
     b.className = "choice" + (req.ok?"":" locked");
     b.innerHTML = `<div class="cidx">
-      <span class="cnum">${String(i+1).padStart(2,"0")}</span>
+      <div class="cidx-left">
+        <span class="cnum">${String(i+1).padStart(2,"0")}</span>
+        ${tag ? `<span class="ctag ${tagCls}">${tag}</span>` : ""}
+      </div>
       <span class="cact">${req.ok
         ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS.arrow}</svg>`
         : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS.lock}</svg>`}</span>
@@ -1989,8 +2016,11 @@ function renderScene(id){
       box.style.pointerEvents="none";
       b.classList.add("sel");
       if(navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
+      const gameSc = $("scr-game");
+      if(gameSc) gameSc.classList.add("dissolving-out");
       setTimeout(()=>{
         box.style.pointerEvents = "";
+        if(gameSc) gameSc.classList.remove("dissolving-out");
         choose(ch);
       }, 160);
     };
@@ -2111,6 +2141,15 @@ function renderEcho(ch, deltas, rankUp, riskCalmed, dynamicLead){
   else rankEl.style.display="none";
 
   show("scr-echo"); save();
+}
+
+function advanceFromEcho(){
+  const echoScreen = $("scr-echo");
+  if(echoScreen) echoScreen.classList.add("dissolving-out");
+  setTimeout(()=>{
+    if(echoScreen) echoScreen.classList.remove("dissolving-out");
+    afterEcho();
+  }, 160);
 }
 
 function afterEcho(){
@@ -2357,7 +2396,7 @@ function renderPanel(id){
 
           <div class="statrow">
             <div class="statline">
-              <span class="sl-title"><span class="ic" data-ic="crown"></span>Казна</span>
+              <span class="sl-title"><span class="ic" data-ic="coin"></span>Казна</span>
               <span class="sl-val">${S.treasuryUnlocked ? `${S.stats.treasury} / 10` : "Заблокирована"}</span>
             </div>
             <div class="statbar-track"><div class="statbar-fill" style="width:${S.treasuryUnlocked ? S.stats.treasury*10 : 0}%;background:var(--gold)"></div></div>
@@ -2439,6 +2478,7 @@ const HERO_RELICS = [
 function openRelicDlg(id){
   const r = HERO_RELICS.find(x=>x.id===id);
   if(!r) return;
+  if($("relicDlgIcon")) $("relicDlgIcon").innerHTML = ICONS[r.ic] ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">${ICONS[r.ic]}</svg>` : "";
   $("relicDlgType").textContent = r.tag;
   $("relicDlgTitle").textContent = r.name;
   $("relicDlgSub").textContent = `${r.sub} · ${r.status}`;
