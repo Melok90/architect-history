@@ -1,14 +1,2539 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Архитектор Истории (Anno Domini 1180)</title>
-  <meta http-equiv="refresh" content="0; url=_preview/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#080D0B">
+<title>Архитектор истории — MVP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ===== Архитектор истории — источник: ver_claude/design.md ===== */
+  --bg:#080D0B; --bg2:#0D1411;
+  --surface:#111A16; --surface-hi:#17211C; --surface-hi2:#1E2A24;
+  --border:#1E2A24; --border-soft:#151F1A; --border-lit:#2C3B33;
+  --text:#E8E1D2; --text-dim:#A6AC9B; --text-faint:#6E7669;
+  --gold:#B79A56; --gold-bright:#D3BC7E;
+  --sage:#A3BC94; --sage-dim:#4E6644;
+  --amber:#D9B368; --amber-dim:#8A6526;
+  --burgundy:#C0736D; --burgundy-dim:#6B2E2B; --burgundy-track:#9E4A45;
+  --crimson:#E0534C; --crimson-dim:#7A2622;
+  /* совместимость с существующей вёрсткой */
+  --panel:var(--surface); --panel-raised:var(--surface-hi); --panel-high:var(--surface-hi2);
+  --bg-deep:var(--bg);
+  --flame:#E0534C; --flame-bright:#F0716A;
+  --ember:var(--burgundy); --ember-dim:var(--burgundy-dim);
+
+  /* Безопасный отступ под вырез / Notch / Dynamic Island / камеру телефона */
+  --safe-top:max(env(safe-area-inset-top, 0px), 32px);
+  --safe-bottom:max(env(safe-area-inset-bottom, 0px), 12px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{overscroll-behavior:none}
+html,body{height:100%}
+body{background:var(--bg-deep);color:var(--text);font-family:'Spectral',Georgia,serif;font-size:16px;line-height:1.6;overflow-x:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body.lock{overflow:hidden}
+button{touch-action:manipulation;font:inherit;background:none;border:none;color:inherit;cursor:pointer}
+#app{max-width:460px;margin:0 auto;min-height:100dvh;background:var(--bg);position:relative;z-index:1;
+  border-left:1px solid var(--border-soft);border-right:1px solid var(--border-soft)}
+@media(min-width:768px){
+  :root{
+    --safe-top:0px;
+    --safe-bottom:0px;
+  }
+  #app{margin:24px auto;min-height:calc(100dvh - 48px);border-radius:12px;overflow:hidden;
+    box-shadow:0 0 50px rgba(0,0,0,.85),0 0 0 1px var(--border)}
+}
+.screen{display:none;min-height:100dvh;flex-direction:column;padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+.screen.active{display:flex;animation:fadeIn .32s cubic-bezier(.2,.6,.3,1) both}
+.screen.dissolving-out{opacity:0;transform:translateY(-5px);transition:opacity .16s ease, transform .16s ease;pointer-events:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* виньетка — комната освещена одной точкой, не залита светом */
+.vign{position:fixed;inset:0;pointer-events:none;z-index:50;
+  background:radial-gradient(120% 90% at 50% 24%,transparent 45%,rgba(0,0,0,.5) 100%)}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:49;mix-blend-mode:soft-light;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.label{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint)}
+
+/* ============ ИКОНКИ (маска, тонкий контур) ============ */
+svg.pix{shape-rendering:geometricPrecision;width:16px;height:16px;flex-shrink:0}
+.ic{
+  width:12px;
+  height:12px;
+  flex:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  vertical-align:middle;
+}
+.ic svg{
+  width:100%;
+  height:100%;
+  display:block;
+  flex-shrink:0;
+}
+
+/* ============ ШАПКА ИГРЫ / HUD — Компактная двухстрочная архитектура ============ */
+.ghead{
+  position:sticky;
+  top:0;
+  z-index:25;
+  background:rgba(13, 20, 17, 0.96);
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  transition:border-color .35s, box-shadow .35s;
+  padding-top:var(--safe-top);
+}
+.ghead.risk-alert-pulse{
+  animation:riskGlowPulse 1.4s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes riskGlowPulse{
+  0%{border-bottom-color:rgba(224,83,76,.85);box-shadow:0 4px 20px rgba(224,83,76,.3)}
+  50%{border-bottom-color:rgba(224,83,76,.5);box-shadow:0 2px 10px rgba(224,83,76,.18)}
+  100%{border-bottom-color:var(--border);box-shadow:none}
+}
+
+/* Строка 1: Хронология слева, Ресурсы справа */
+.ghead-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 16px 5px;
+}
+.ghead-chronicle{
+  display:inline-flex;
+  align-items:baseline;
+  gap:6px;
+  cursor:pointer;
+  padding:3px 6px;
+  margin-left:-6px;
+  border-radius:4px;
+  transition:background .2s;
+  min-width:0;
+  flex:none;
+}
+.ghead-chronicle:hover{background:var(--surface-hi)}
+.ghead-year{
+  font-family:'Spectral',Georgia,serif;
+  font-size:16px;
+  font-weight:500;
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
+  line-height:1;
+}
+.ghead-dot{color:var(--text-faint);font-size:12px}
+.ghead-turn{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  line-height:1;
+}
+.ghead-chapter-tag{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:9.5px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--gold);
+  background:rgba(183,154,86,.1);
+  padding:1px 5px;
+  border-radius:3px;
+  border:1px solid rgba(183,154,86,.22);
+  margin-left:2px;
+  white-space:nowrap;
+}
+
+/* Статы ресурсов */
+.ghead-stats{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  cursor:pointer;
+  padding:2px;
+  margin-right:-4px;
+  border-radius:6px;
+  transition:background .2s;
+  flex:none;
+}
+.ghead-stats:hover{background:var(--surface-hi)}
+.ghead-stat{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:3px 7px;
+  border-radius:4px;
+  background:rgba(255,255,255,.025);
+  border:1px solid rgba(255,255,255,.05);
+  line-height:1;
+}
+.ghead-stat .ic{width:12px;height:12px;color:var(--gold);opacity:.88}
+.ghead-stat-lbl{
+  display:none;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:9.5px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  line-height:1;
+}
+@media(min-width:440px){
+  .ghead-stat-lbl{display:inline}
+  .ghead-stats{gap:6px}
+}
+.ghead-stat-val{
+  font-family:'Spectral',Georgia,serif;
+  font-size:14px;
+  font-weight:600;
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
+  line-height:1;
+}
+
+/* Всплывающие микро-дельты (+1 / -1) */
+.stat-delta{
+  position:absolute;
+  top:-14px;
+  right:1px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:9.5px;
+  font-weight:600;
+  letter-spacing:.04em;
+  padding:0 3px;
+  border-radius:3px;
+  pointer-events:none;
+  opacity:0;
+  transform:translateY(4px);
+  transition:none;
+  z-index:15;
+}
+.stat-delta.show{
+  opacity:1;
+  transform:translateY(-3px);
+  transition:opacity .3s, transform .45s cubic-bezier(.2,.8,.2,1);
+}
+.stat-delta.delta-up{
+  color:var(--sage);
+  background:rgba(163,188,148,.18);
+  border:1px solid rgba(163,188,148,.35);
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+.stat-delta.delta-down{
+  color:var(--burgundy);
+  background:rgba(192,115,109,.2);
+  border:1px solid rgba(192,115,109,.4);
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+
+/* Строка 2: Риск Инквизиции */
+.ghead-risk{
+  padding:3px 16px 7px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.ghead-risk-meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.ghead-risk-title{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:9.5px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  line-height:1;
+}
+.ghead-risk-title .ic{width:12px;height:12px;color:var(--text-faint);transition:color .3s}
+.ghead-risk-valwrap{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.ghead-risk-badge{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:9px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  padding:1px 5px;
+  border-radius:3px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border-soft);
+  transition:color .3s, border-color .3s, background .3s;
+}
+.ghead-risk-num{
+  font-family:'Spectral',Georgia,serif;
+  font-size:13.5px;
+  color:var(--text-dim);
+  line-height:1;
+}
+.ghead-risk-num b{
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+  transition:color .3s;
+}
+.ghead-risk-num .risk-max{
+  font-size:10px;
+  color:var(--text-faint);
+  font-family:'IBM Plex Sans',sans-serif;
+  margin-left:1px;
+}
+
+/* Трек риска с пороговыми насечками */
+.grisk-track{
+  position:relative;
+  height:4px;
+  background:var(--surface);
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid var(--border-soft);
+}
+.grisk-fill{
+  position:absolute;
+  top:0;
+  left:0;
+  height:100%;
+  width:2%;
+  border-radius:999px;
+  transition:width 360ms cubic-bezier(.2,.6,.3,1), background 360ms ease;
+  z-index:1;
+}
+.grisk-ticks{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:2;
+}
+.gtick{
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:1px;
+  background:rgba(8,13,11,.75);
+  transform:translateX(-50%);
+}
+
+.grisk-hint{
+  margin-top:4px;
+  font-family:'Spectral',Georgia,serif;
+  font-size:11.5px;
+  color:var(--amber);
+  font-style:italic;
+  line-height:1.35;
+  padding:5px 8px;
+  background:rgba(217,179,104,.07);
+  border-radius:4px;
+  border:1px solid rgba(217,179,104,.18);
+}
+
+/* Строка 3 (только если есть активные флаги) */
+.flagsrow{
+  display:flex;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  gap:5px;
+  padding:0 16px 6px;
+}
+.flagsrow::-webkit-scrollbar{display:none}
+.flagsrow:empty{display:none}
+.flagchip{
+  flex:none;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--text-dim);
+  border-radius:3px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:9px;
+  padding:2px 6px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+/* ============ ВЕСТИ ИЗ ВНЕШНЕГО МИРА ============ */
+.event-banner{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 12px;
+  margin-bottom:6px;
+  border-radius:6px;
+  background:linear-gradient(90deg, rgba(183,154,86,.14) 0%, rgba(183,154,86,.04) 100%);
+  border:1px solid rgba(183,154,86,.32);
+  width:fit-content;
+}
+.event-banner-badge{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--gold);
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.event-banner-origin{
+  font-family:'Spectral',Georgia,serif;
+  font-size:12.5px;
+  font-style:italic;
+  color:var(--text-dim);
+  border-left:1px solid rgba(183,154,86,.3);
+  padding-left:10px;
+}
+.chron-event-tag{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:8.5px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--gold);
+  background:rgba(183,154,86,.12);
+  border:1px solid rgba(183,154,86,.28);
+  padding:1px 5px;
+  border-radius:3px;
+  margin-left:6px;
+}
+
+/* ============ СЦЕНА ============ */
+.scenewrap{flex:1;display:flex;flex-direction:column;animation:riseIn .48s cubic-bezier(.2,.6,.3,1) both}
+@keyframes riseIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.scenehead{display:flex;flex-direction:column;gap:6px;padding:16px 20px 12px}
+.scenehead .chapter{display:none}
+h1.scenetitle{font-family:'Spectral',Georgia,serif;font-weight:400;font-size:24px;color:var(--text);line-height:1.2;letter-spacing:-.01em}
+.scenemeta{font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)}
+.scenemeta .npc{color:var(--gold)}
+
+/* заглушка иллюстрации (до готового арта) */
+.scenefig{margin:0;display:flex;flex-direction:column;gap:10px}
+.scenefig-img{position:relative;width:100%;height:190px;overflow:hidden;background:var(--bg);
+  border-top:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft)}
+.scenefig-img.short{height:160px}
+.scenefig-hatch{position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(166,172,155,.055) 0 2px,transparent 2px 10px)}
+.scenefig-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.85) brightness(.9)}
+.scenefig-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,13,11,.96) 0%,rgba(8,13,11,.4) 42%,rgba(8,13,11,.05) 100%)}
+.scenefig-cap{position:absolute;left:20px;right:20px;bottom:14px;display:flex;flex-direction:column;gap:4px}
+.scenefig-cap .t{font-family:'Spectral',Georgia,serif;font-size:18px;line-height:1.2;color:var(--text)}
+.scenefig-cap .tag{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint)}
+.scenefig figcaption{padding:0 20px;font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;line-height:1.4;color:var(--text-faint)}
+
+.desc{display:flex;flex-direction:column;gap:16px;padding:22px 20px 0}
+.desc p{font-family:'Spectral',Georgia,serif;font-size:17px;line-height:1.7;color:var(--text)}
+.desc .quote{margin:8px 0 0;display:flex;flex-direction:column;gap:8px;padding:2px 0 2px 20px;border-left:1px solid #7C6733}
+.desc .quote .qn{font-family:'IBM Plex Sans',sans-serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim)}
+.desc .quote p{font-style:italic}
+
+/* ============ ВЫБОРЫ ============ */
+.choicehint{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin:14px 20px 0;font-family:'IBM Plex Sans',sans-serif;
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)}
+.choicehint svg{width:13px;height:13px;opacity:.7}
+.choicelbl{display:flex;align-items:center;gap:12px;margin:32px 20px 14px}
+.choicelbl span{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--text)}
+.choicelbl i{flex:1;height:1px;background:linear-gradient(90deg, rgba(232,225,210,.22), transparent)}
+.choices{padding:0 20px;display:flex;flex-direction:column;gap:11px;pointer-events:auto}
+.choice{display:flex;flex-direction:column;gap:9px;width:100%;text-align:left;padding:15px 17px;border:1px solid var(--border);
+  border-radius:12px;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(232,225,210,.04);position:relative;
+  transition:border-color .18s ease,background .18s ease,transform .14s ease,box-shadow .18s ease;cursor:pointer;pointer-events:auto}
+.choice:hover{border-color:rgba(183,154,86,.45);background:var(--surface-hi);transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(232,225,210,.06)}
+.choice:active{transform:scale(0.985);background:rgba(183,154,86,.08);border-color:var(--gold)}
+.choice.sel{border-color:var(--gold-bright);background:var(--surface-hi2);box-shadow:0 0 20px rgba(183,154,86,.3);transform:scale(0.99)}
+.choice.locked{opacity:.5;border-style:dashed;border-color:rgba(61,87,72,.45);background:rgba(11,19,15,.45);cursor:not-allowed;pointer-events:none}
+.choice .cidx{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:'IBM Plex Sans',sans-serif}
+.choice .cidx-left{display:inline-flex;align-items:center;gap:8px}
+.choice .cnum{font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--text-faint);font-variant-numeric:tabular-nums}
+.choice .ctag{font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
+  padding:2px 7px;border-radius:4px;background:rgba(183,154,86,.08);border:1px solid rgba(183,154,86,.2);line-height:1.2}
+.choice .ctag.tag-vision{color:#e5c158;background:rgba(229,193,88,.1);border-color:rgba(229,193,88,.28)}
+.choice .ctag.tag-authority{color:#8da4c4;background:rgba(141,164,196,.1);border-color:rgba(141,164,196,.25)}
+.choice .ctag.tag-experience{color:#a3bc94;background:rgba(163,188,148,.1);border-color:rgba(163,188,148,.25)}
+.choice .ctag.tag-direct{color:#e07a73;background:rgba(224,122,115,.12);border-color:rgba(224,122,115,.3)}
+.choice .ctag.tag-daring{color:#d3bc7e;background:rgba(211,188,126,.1);border-color:rgba(211,188,126,.25)}
+.choice .ctag.tag-care{color:#8fba8f;background:rgba(143,186,143,.1);border-color:rgba(143,186,143,.22)}
+.choice .ctag.tag-restraint{color:#a6ac9b;background:rgba(166,172,155,.08);border-color:rgba(166,172,155,.18)}
+.choice .cact{display:inline-flex;align-items:center;color:var(--text-faint);transition:transform .18s ease,color .18s ease}
+.choice:hover .cact{color:var(--gold);transform:translateX(2px)}
+.choice .cact svg{width:15px;height:15px}
+.choice .ctext{font-family:'Spectral',Georgia,serif;font-size:16.5px;line-height:1.4;color:var(--text);letter-spacing:.005em}
+.choice .req{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Sans',sans-serif;font-size:10px;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--burgundy);padding:3px 8px;background:rgba(192,115,109,.1);
+  border-radius:4px;border:1px solid rgba(192,115,109,.25);width:fit-content;margin-top:2px}
+.choice .req svg{width:12px;height:12px;flex:none}
+
+/* ============ ЭХО РЕШЕНИЯ (экран последствий) ============ */
+.echo{flex:1;display:flex;flex-direction:column}
+.echohead{display:flex;flex-direction:column;gap:12px;padding:calc(16px + var(--safe-top)) 20px 16px}
+.echo .chapter{padding:0}
+.echo h1{padding:0;font-family:'Spectral',Georgia,serif;font-weight:400;font-size:28px;color:var(--text);line-height:1.2}
+
+.echo-decision{margin-top:6px;padding:12px 16px;border-left:2.5px solid var(--gold);
+  background:rgba(183,154,86,.05);border-radius:0 8px 8px 0;display:flex;flex-direction:column;gap:4px}
+.echo-decision-label{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gold)}
+.echo-decision-quote{font-family:'Spectral',Georgia,serif;font-style:italic;font-size:15.5px;line-height:1.45;color:var(--text);quotes:none}
+
+.echobody{display:flex;flex-direction:column;gap:16px;padding:24px 20px 0}
+.echolead p{font-family:'Spectral',Georgia,serif;font-size:17.5px;line-height:1.68;color:var(--text)}
+
+.lang{display:inline-flex;align-items:center;gap:8px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;
+  color:var(--text-dim);width:fit-content;padding:6px 12px;border-radius:6px;background:var(--surface);
+  border:1px solid var(--border-lit)}
+.lang b{color:var(--gold-bright);font-weight:600;letter-spacing:.04em}
+
+.echochron{margin:32px 20px 0}
+.echochron .lbl{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.echochron .lbl span{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--text)}
+.echochron .lbl i{flex:1;height:1px;background:linear-gradient(90deg, rgba(232,225,210,.22), transparent)}
+.deltas{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.delta{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-soft);
+  font-family:'IBM Plex Sans',sans-serif}
+.delta:last-child{border-bottom:none}
+.delta .dl{display:inline-flex;align-items:center;gap:10px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text)}
+.delta .dot{width:6px;height:6px;border-radius:999px;flex:none}
+.delta .dv{display:inline-flex;align-items:center;gap:10px;font-variant-numeric:tabular-nums}
+.delta .before{font-size:12.5px;color:var(--text-faint)}
+.delta .arrow{width:12px;height:12px;color:var(--text-faint)}
+.delta .after{font-family:'Spectral',Georgia,serif;font-size:17px;font-weight:600;color:var(--text)}
+.delta .chg{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:22px;padding:0 7px;
+  border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.06em}
+
+.delta.up .dot{background:var(--sage)}
+.delta.up .chg{background:rgba(163,188,148,.15);border:1px solid rgba(163,188,148,.35);color:var(--sage)}
+.delta.down .dot{background:var(--burgundy)}
+.delta.down .chg{background:rgba(192,115,109,.15);border:1px solid rgba(192,115,109,.35);color:#E57373}
+
+.rvp{margin:24px 20px 0;padding:16px 18px;border-radius:10px;
+  background:linear-gradient(180deg, rgba(232,225,210,.03) 0%, rgba(17,26,22,.65) 100%);
+  border:1px solid rgba(183,154,86,.26);box-shadow:0 2px 10px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;gap:12px}
+.rvp-header{display:flex;align-items:center;gap:8px}
+.rvp-icon{width:15px;height:15px;color:var(--gold);flex:none}
+.rvp .rl{font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.rvp-grid{display:flex;flex-direction:column;gap:10px}
+.rvp-item{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:6px;background:rgba(0,0,0,.25);border:1px solid var(--border-soft)}
+.rvp-badge{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)}
+.rvp-item p{font-family:'Spectral',Georgia,serif;font-size:14.5px;line-height:1.55;color:var(--text)}
+.rvp-player .rvp-badge{color:var(--gold-bright)}
+
+.flagnote{margin:16px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 15px;
+  text-align:left;font-family:'Spectral',Georgia,serif;font-size:13px;color:var(--text-dim)}
+.flagnote b{color:var(--gold);display:block;font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;margin-bottom:3px;font-weight:600}
+.rankup{margin:16px 20px 0;background:var(--surface-hi);border:1px solid var(--border-lit);border-radius:8px;padding:16px;text-align:center}
+.rankup .rl{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--text-faint)}
+.rankup .rt{font-family:'Spectral',Georgia,serif;font-size:22px;color:var(--gold);margin-top:5px}
+.rankup .rd{font-family:'Spectral',Georgia,serif;font-size:13px;color:var(--text-dim);font-style:italic;margin-top:4px}
+
+/* ============ КНОПКИ ============ */
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:46px;border:1px solid var(--border-lit);
+  border-radius:6px;background:var(--surface-hi);color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  padding:14px 18px;margin-top:auto;transition:background .17s,border-color .17s,box-shadow .17s,transform .12s;cursor:pointer}
+.btn:hover{border-color:var(--gold);background:var(--surface-hi2);box-shadow:0 2px 12px rgba(183,154,86,.15)}
+.btn:active{transform:scale(0.985);background:var(--surface-hi2)}
+.btn.top{margin:28px 20px 20px;width:calc(100% - 40px)}
+.btn.ghost{background:transparent;border-color:var(--border-soft);color:var(--text-faint);margin-top:12px;font-size:10px}
+
+#btnNew{background:var(--surface-hi);border-color:var(--gold);color:var(--gold-bright);
+  box-shadow:0 0 16px rgba(183,154,86,.14);letter-spacing:.16em}
+#btnNew:active{background:var(--surface-hi2);box-shadow:0 0 8px rgba(183,154,86,.1)}
+#btnContinue{background:var(--surface-hi2);border-color:var(--border-lit);color:var(--text);margin-bottom:10px}
+
+/* ============ ТИТУЛ ============ */
+.titlescr{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+  padding:calc(24px + var(--safe-top)) 30px 40px}
+.crest{width:52px;margin:0 auto 18px;opacity:.85}
+.titlescr .lbl{font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:.3em;color:var(--gold);text-transform:uppercase}
+.titlescr h1{font-family:'Spectral',Georgia,serif;font-weight:500;font-size:42px;color:var(--text);
+  line-height:1.15;margin:16px 0 6px}
+.titlescr .yr{font-family:'IBM Plex Sans',sans-serif;font-size:11px;letter-spacing:.28em;color:var(--text-faint);text-transform:uppercase;font-weight:500}
+.titlescr p{margin-top:20px;font-family:'Spectral',Georgia,serif;font-size:16px;font-style:italic;color:var(--text-dim);
+  max-width:320px;line-height:1.6}
+.titlescr .btn{margin-top:24px;max-width:290px}
+
+/* ============ ПРОЛОГ ============ */
+.prologuescr{flex:1;display:flex;flex-direction:column;padding:calc(16px + var(--safe-top)) 20px 40px;animation:dissolveIn .42s cubic-bezier(.2,.6,.3,1) both}
+.prologue-card{display:flex;flex-direction:column;gap:18px}
+.prologue-header{display:flex;flex-direction:column;gap:6px}
+.prologue-kicker{font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.prologue-title{font-family:'Spectral',Georgia,serif;font-size:28px;font-weight:400;color:var(--text);line-height:1.2}
+.prologue-meta{font-family:'IBM Plex Sans',sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)}
+
+.prologue-art{border-radius:10px;overflow:hidden;border:1px solid var(--border);position:relative;background:var(--surface)}
+.prologue-art-inner{position:relative;width:100%;height:150px;overflow:hidden}
+.prologue-art-inner img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(20%) contrast(105%)}
+.prologue-art-grad{position:absolute;inset:0;background:linear-gradient(180deg, transparent 40%, rgba(8,13,11,.85) 100%)}
+
+.prologue-text{display:flex;flex-direction:column;gap:13px}
+.prologue-text p{font-family:'Spectral',Georgia,serif;font-size:16px;line-height:1.65;color:var(--text-dim)}
+.prologue-text p.lead{color:var(--text);font-size:17px;line-height:1.6}
+
+.prologue-rule{display:flex;gap:12px;padding:13px 15px;border-radius:8px;background:rgba(183,154,86,.06);
+  border:1px solid rgba(183,154,86,.25);align-items:flex-start}
+.prologue-rule-icon{color:var(--gold);flex:none;margin-top:2px}
+.prologue-rule-text{font-family:'Spectral',Georgia,serif;font-size:13.5px;line-height:1.55;color:var(--text-dim)}
+.prologue-rule-text b{font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--gold);display:block;margin-bottom:2px}
+
+.btn-prologue{margin-top:10px;background:var(--surface-hi);border-color:var(--gold);color:var(--gold-bright);
+  box-shadow:0 0 16px rgba(183,154,86,.14);letter-spacing:.16em;min-height:50px}
+.btn-prologue:hover{box-shadow:0 0 24px rgba(183,154,86,.25);background:var(--surface-hi2)}
+.btn-prologue:active{transform:scale(0.985);box-shadow:0 0 10px rgba(183,154,86,.1)}
+
+/* ============ КОНЦОВКА / ФИНАЛ СРЕЗА ============ */
+.ending{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+  padding:24px 20px;max-width:390px;margin:0 auto}
+.ending h1{font-family:'Spectral',Georgia,serif;font-weight:500;font-size:24px;margin:10px 0 6px}
+.ending.lose h1{color:var(--burgundy)}
+.ending.win h1{color:var(--gold-bright)}
+.ending p{color:var(--text-dim);font-family:'Spectral',Georgia,serif;font-size:15px;font-style:italic;max-width:320px;
+  line-height:1.6}
+.ending .summary{margin:12px 0 16px;font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;font-weight:500;letter-spacing:.08em;
+  color:var(--text-faint);line-height:1.8;text-transform:uppercase}
+.ending .btn{max-width:280px}
+
+/* ============ НИЖНЯЯ НАВИГАЦИЯ — 1:1 нижняя панель макета ============ */
+nav{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:460px;z-index:40;
+  background:var(--bg2);border-top:1px solid var(--border);border-left:1px solid var(--border);border-right:1px solid var(--border);
+  padding-bottom:var(--safe-bottom)}
+nav .in{display:flex;align-items:center;gap:12px;padding:12px 20px 16px}
+nav button{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:12px 16px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text-dim);background:transparent;border:1px solid var(--border);border-radius:4px;transition:background .17s,color .17s}
+nav button:active{background:var(--surface)}
+nav button .label{font-size:10px;letter-spacing:.14em;font-weight:400;text-transform:uppercase}
+nav button.on{color:var(--gold)}
+
+/* ============ ПАНЕЛИ / РЕГИСТРЫ ============ */
+.panel{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  visibility:hidden;opacity:0;transform:translateY(24px);
+  transition:transform .32s cubic-bezier(.2,.8,.25,1),opacity .32s,visibility .32s}
+.panel.active{visibility:visible;opacity:1;transform:none}
+.panel .pin{max-width:460px;margin:0 auto;padding:0 20px 36px}
+.phead{position:sticky;top:0;z-index:10;background:rgba(8,13,11,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  margin:0 -20px 20px;padding:calc(12px + var(--safe-top)) 20px 14px;
+  border-bottom:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center}
+.panel h2{font-family:'Spectral',Georgia,serif;font-weight:400;font-size:22px;color:var(--text);line-height:1.2}
+.plbl{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.16em;color:var(--text-faint);text-transform:uppercase}
+.pclose{background:var(--surface);border:1px solid var(--border);border-radius:6px;width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;color:var(--text-dim);transition:all .2s}
+.pclose:hover{background:var(--surface-hi);color:var(--text);border-color:var(--border-lit)}
+.empty{color:var(--text-faint);font-style:italic;margin-top:30px;text-align:center;font-size:14.5px}
+
+/* Летопись: группировка и таймлайн */
+.chronchapter-group{margin-bottom:28px}
+.chronchapter-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.chronchapter-badge{font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
+  background:rgba(183,154,86,.1);padding:3px 8px;border-radius:4px;border:1px solid rgba(183,154,86,.25);flex:none}
+.chronchapter-line{height:1px;background:var(--border-soft);flex:1}
+.chronchapter-items{display:flex;flex-direction:column}
+.chronentry{border-left:1.5px solid var(--border);padding:0 0 20px 16px;position:relative;margin-left:4px}
+.chronentry::before{content:"";position:absolute;left:-5px;top:4px;width:9px;height:9px;border-radius:999px;background:var(--gold);box-shadow:0 0 0 2px var(--bg)}
+.chronentry:last-child{padding-bottom:8px}
+.chron-meta{display:flex;align-items:baseline;gap:6px;margin-bottom:3px}
+.chron-date{font-family:'IBM Plex Sans',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)}
+.chron-title{font-family:'Spectral',Georgia,serif;font-size:17px;color:var(--text);margin-bottom:4px;font-weight:500}
+.chron-choice{font-family:'Spectral',Georgia,serif;font-size:13.5px;color:var(--text-dim);line-height:1.5;font-style:italic;
+  background:rgba(255,255,255,.02);padding:6px 10px;border-radius:4px;border-left:2px solid var(--gold);margin:0}
+.chron-nochoice{font-size:12px;color:var(--text-faint);font-style:italic}
+
+/* Герой: формуляр брата Луки */
+.char-dossier{display:flex;flex-direction:column;gap:16px}
+.char-hero-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden}
+.char-hero-top{display:flex;align-items:center;gap:14px}
+.char-hero-portrait-frame{width:68px;height:68px;border-radius:8px;border:1px solid var(--gold);outline:2px solid rgba(183,154,86,.28);outline-offset:2px;
+  position:relative;flex:none;cursor:pointer;overflow:hidden;background:#0d1512;box-shadow:0 4px 14px rgba(0,0,0,.45);transition:outline-color .2s,box-shadow .2s}
+.char-hero-portrait-frame:hover{outline-color:var(--gold-bright);box-shadow:0 6px 18px rgba(183,154,86,.25)}
+.char-hero-avatar{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.05) sepia(.08);transition:transform .3s ease}
+.char-hero-portrait-frame:hover .char-hero-avatar{transform:scale(1.06)}
+.char-hero-zoom-hint{position:absolute;bottom:2px;right:2px;background:rgba(8,13,11,.82);border-radius:4px;padding:2px 3px;display:flex;align-items:center;justify-content:center;color:var(--gold);opacity:.85}
+.char-hero-zoom-hint svg{width:11px;height:11px}
+.char-hero-info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.char-hero-name{font-family:'Spectral',Georgia,serif;font-size:19px;color:var(--text);font-weight:600;line-height:1.2}
+.char-hero-order{font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;color:var(--text-faint);letter-spacing:.02em}
+.char-hero-rank-tag{display:inline-block;align-self:flex-start;font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);background:rgba(183,154,86,.12);border:1px solid rgba(183,154,86,.3);border-radius:4px;padding:2px 7px;margin-top:2px}
+.char-hero-desc{font-size:13px;font-style:italic;color:var(--text-dim);line-height:1.45;padding-top:2px;border-left:2px solid var(--border-lit);padding-left:10px;margin-top:2px}
+.char-inf-section{padding-top:10px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:6px}
+.char-inf-row{display:flex;justify-content:space-between;align-items:baseline}
+.char-inf-label{font-family:'IBM Plex Sans',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint)}
+.char-inf-val{font-family:'Spectral',Georgia,serif;font-size:14px;color:var(--gold);font-weight:600}
+.char-inf-val .inf-target{font-size:11px;color:var(--text-faint);font-weight:400;font-family:'IBM Plex Sans',sans-serif}
+
+/* Обет и тайна пришельца */
+.char-origin-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:13px 15px;display:flex;flex-direction:column;gap:8px}
+.char-origin-motto{font-family:'Spectral',Georgia,serif;font-size:13.5px;font-style:italic;color:var(--gold);letter-spacing:.02em;line-height:1.4}
+.char-origin-text{font-size:12.5px;color:var(--text-dim);line-height:1.55}
+.char-origin-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.char-origin-tag{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;letter-spacing:.04em;color:var(--text-faint);background:rgba(255,255,255,.03);border:1px solid var(--border-soft);border-radius:4px;padding:2px 6px}
+
+/* Реликвии и инструменты */
+.char-relics-sub{font-size:11.5px;color:var(--text-faint);font-style:italic;margin-top:-8px;margin-bottom:2px}
+.char-relics-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.char-relic-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:7px;padding:10px 11px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:border-color .15s,background .15s;text-align:left;position:relative}
+.char-relic-card:hover{border-color:var(--gold);background:rgba(183,154,86,.05)}
+.char-relic-head{display:flex;align-items:center;gap:8px}
+.char-relic-icon{width:28px;height:28px;border-radius:5px;background:rgba(183,154,86,.08);border:1px solid rgba(183,154,86,.25);display:flex;align-items:center;justify-content:center;color:var(--gold);flex:none}
+.char-relic-icon svg{width:16px;height:16px}
+.char-relic-name{font-family:'Spectral',Georgia,serif;font-size:13px;font-weight:600;color:var(--text);line-height:1.2}
+.char-relic-sub{font-family:'IBM Plex Sans',sans-serif;font-size:10px;color:var(--text-faint);line-height:1.2}
+.char-relic-hint{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;color:var(--gold);letter-spacing:.03em;display:flex;align-items:center;gap:4px;margin-top:auto}
+.char-relic-hint .ic{width:10px;height:10px}
+
+/* Модальные окна реликвий и портрета */
+.relic-dlg-box{max-width:360px;text-align:left;padding:22px 20px}
+.relic-dlg-top{display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px}
+.relic-dlg-icon{width:36px;height:36px;border-radius:8px;background:rgba(183,154,86,.08);border:1px solid rgba(183,154,86,.25);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+.relic-dlg-icon svg{width:20px;height:20px}
+.relic-dlg-badge{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0}
+.relic-dlg-sub{font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--text-faint);margin-top:-4px;margin-bottom:12px}
+.relic-dlg-quote{font-family:'Spectral',Georgia,serif;font-size:13px;font-style:italic;color:var(--gold);background:rgba(183,154,86,.06);border-left:2px solid var(--gold);padding:8px 10px;border-radius:4px;line-height:1.45;margin-bottom:18px}
+.portrait-dlg-box{max-width:360px;text-align:center;padding:22px 20px}
+.portrait-dlg-frame{width:160px;height:160px;margin:0 auto;border-radius:8px;border:2px solid var(--gold);outline:3px solid rgba(183,154,86,.25);outline-offset:3px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.6)}
+.portrait-dlg-img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.05) sepia(.08)}
+
+.char-section-title{font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-top:4px}
+.char-stats-card, .char-risk-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.char-stats-card .statrow{padding:8px 0;border-bottom:1px solid var(--border-soft)}
+.char-stats-card .statrow:last-child{border-bottom:none;padding-bottom:0}
+.char-stats-card .statrow:first-child{padding-top:0}
+.sl-title{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);line-height:1}
+.sl-title .ic{width:12px;height:12px;color:var(--text-faint)}
+.sl-val{font-family:'Spectral',Georgia,serif;font-size:14px;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums}
+.char-risk-note{font-size:12px;color:var(--text-faint);font-style:italic;line-height:1.4;margin-top:2px}
+
+.char-traits-box{display:flex;flex-direction:column;gap:8px}
+.char-trait-item{background:var(--surface);border:1px solid var(--border-soft);border-radius:6px;padding:10px 14px}
+.char-trait-name{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+.char-trait-desc{font-family:'Spectral',Georgia,serif;font-size:13px;color:var(--text-dim);line-height:1.45}
+.empty-traits{color:var(--text-faint);font-style:italic;font-size:13px;padding:8px 0}
+
+/* ============ ПОДТВЕРЖДЕНИЕ ============ */
+.dlgwrap{position:fixed;inset:0;z-index:60;background:rgba(8,13,11,.8);display:flex;align-items:center;
+  justify-content:center;padding:28px;visibility:hidden;opacity:0;transition:opacity .2s,visibility .2s}
+.dlgwrap.active{visibility:visible;opacity:1}
+.dlg{background:var(--surface);border:1px solid var(--border-lit);border-radius:12px;max-width:330px;width:100%;padding:24px 20px;
+  text-align:center;transform:scale(.95);transition:transform .2s}
+.dlgwrap.active .dlg{transform:none}
+.dlg .dt{font-family:'Spectral',Georgia,serif;font-size:20px;color:var(--text);margin-bottom:8px}
+.dlg .dm{font-family:'Spectral',Georgia,serif;font-size:13.5px;color:var(--text-dim);line-height:1.6;margin-bottom:20px}
+.dlg .dbtns{display:flex;gap:10px}
+.dlg button{flex:1;padding:12px;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;border:1px solid var(--border);border-radius:4px}
+.dlg .ok{color:var(--gold);border-color:var(--border-lit)}
+.dlg .cancel{color:var(--text-faint)}
+</style>
 </head>
-<body style="background:#080d0b;color:#e8e1d2;font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;padding:20px;text-align:center">
-  <p style="font-size:16px;color:#a6ac9b;margin-bottom:12px">Переход к летописи обители Сен-Дени...</p>
-  <a href="_preview/" style="color:#d3bc7e;font-size:15px;text-decoration:none;padding:10px 18px;border:1px solid rgba(183,154,86,.4);border-radius:8px;background:rgba(183,154,86,.1)">Открыть «Архитектор Истории»</a>
-  <script>location.replace("_preview/");</script>
+<body>
+<div class="vign"></div><div class="grain"></div>
+<div id="app">
+
+  <!-- ==================== ТИТУЛ ==================== -->
+  <section class="screen active" id="scr-title">
+    <div class="titlescr">
+      <div class="crest"><svg viewBox="0 0 60 82" aria-hidden="true">
+        <g fill="none" stroke="#E3A857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".85">
+          <path d="M30 5 C25 17 25 31 30 41 C35 31 35 17 30 5 Z"/>
+          <path d="M30 41 C19 31 8 35 12 47 C15 56 26 53 30 45"/>
+          <path d="M30 41 C41 31 52 35 48 47 C45 56 34 53 30 45"/>
+          <path d="M17 51 H43"/><path d="M30 45 V72"/>
+        </g></svg></div>
+      <div class="lbl">Anno Domini · MCLXXX</div>
+      <h1>Архитектор<br>Истории</h1>
+      <div class="yr">Аббатство Сен-Дени · 1180</div>
+      <p>Человек с запретным знанием будущего в королевском аббатстве Сен-Дени.</p>
+      <button class="btn" id="btnContinue" style="display:none;max-width:290px" onclick="continueGame()">Продолжить путь</button>
+      <button class="btn" id="btnNew" onclick="askNewGame()">Начать путь</button>
+    </div>
+  </section>
+
+  <!-- ==================== ПРОЛОГ ==================== -->
+  <section class="screen" id="scr-prologue">
+    <div class="prologuescr">
+      <div class="prologue-card">
+        <div class="prologue-header">
+          <div class="prologue-kicker">Anno Domini · MCLXXX</div>
+          <h1 class="prologue-title">Память другого времени</h1>
+          <div class="prologue-meta">Аббатство Сен-Дени · Королевство Франция</div>
+        </div>
+
+        <div class="prologue-art">
+          <div class="prologue-art-inner">
+            <img src="img/new_vers/art_abbey.jpg" alt="Аббатство Сен-Дени">
+            <div class="prologue-art-grad"></div>
+          </div>
+        </div>
+
+        <div class="prologue-text">
+          <p class="lead">Ты открываешь глаза в сырой каменной келье. На тебе — грубая шерстяная ряса, а в памяти — знание целого тысячелетия наперёд.</p>
+          <p>Ты помнишь, почему от колодезной воды умирают в лихорадке, как трёхполье спасает от мора и голода, и сколько жизней хранит чистое врачебное железо.</p>
+          <p>Но вокруг — XII век. Эпоха суеверного страха, покаяния и тёмных слухов. Здесь любое знание, не освящённое церковным уставом, быстро нарекают ересью.</p>
+        </div>
+
+        <div class="prologue-rule">
+          <div class="prologue-rule-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/>
+            </svg>
+          </div>
+          <div class="prologue-rule-text">
+            <b>Закон эпохи:</b> Твои решения могут изменить судьбу королевства — но привлекают взгляд Инквизиции. Сумей возвысить этот век, не взойдя на костёр.
+          </div>
+        </div>
+
+        <button class="btn btn-prologue" onclick="startFromPrologue()">
+          <span>Войти в обитель</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ИГРА ==================== -->
+  <section class="screen" id="scr-game">
+    <div class="ghead" id="gameHead">
+      <div class="ghead-bar">
+        <div class="ghead-chronicle" onclick="openPanel('p-chron')" title="Открыть Летопись">
+          <span class="ghead-year" id="hYear">1180</span>
+          <span class="ghead-dot">·</span>
+          <span class="ghead-turn" id="hTurn">Ход 1</span>
+          <span class="ghead-chapter-tag" id="hChapter">Глава I</span>
+        </div>
+
+        <div class="ghead-stats" onclick="openPanel('p-char')" title="Открыть формуляр брата Луки">
+          <div class="ghead-stat" id="statProsperity" title="Процветание">
+            <span class="ic" data-ic="crown"></span>
+            <span class="ghead-stat-lbl">Проц.</span>
+            <span class="ghead-stat-val" id="vProsperity">0</span>
+            <span class="stat-delta" id="deltaProsperity"></span>
+          </div>
+          <div class="ghead-stat" id="statProgress" title="Прогресс">
+            <span class="ic" data-ic="book"></span>
+            <span class="ghead-stat-lbl">Прогр.</span>
+            <span class="ghead-stat-val" id="vProgress">0</span>
+            <span class="stat-delta" id="deltaProgress"></span>
+          </div>
+          <div class="ghead-stat" id="statInfluence" title="Влияние">
+            <span class="ic" data-ic="users"></span>
+            <span class="ghead-stat-lbl">Влиян.</span>
+            <span class="ghead-stat-val" id="hInf">0</span>
+            <span class="stat-delta" id="deltaInfluence"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ghead-risk" id="gheadRisk">
+        <div class="ghead-risk-meta">
+          <div class="ghead-risk-title">
+            <span class="ic" data-ic="flame"></span>
+            <span class="ghead-risk-label">Инквизиция</span>
+          </div>
+          <div class="ghead-risk-valwrap">
+            <span class="ghead-risk-badge" id="riskStatus">Спокойно</span>
+            <span class="ghead-risk-num"><b id="riskVal">0</b><span class="risk-max">/15</span></span>
+            <span class="stat-delta" id="deltaRisk"></span>
+          </div>
+        </div>
+        <div class="grisk-track">
+          <div class="grisk-fill" id="riskFill"></div>
+          <div class="grisk-ticks">
+            <span class="gtick" style="left:20%" title="Порог: Наблюдение"></span>
+            <span class="gtick" style="left:46.7%" title="Порог: Подозрение"></span>
+            <span class="gtick" style="left:73.3%" title="Порог: Угроза ареста"></span>
+            <span class="gtick" style="left:93.3%" title="Порог: Арест"></span>
+          </div>
+        </div>
+        <div class="grisk-hint" id="riskHint" style="display:none">Каждое смелое решение оставляет след. Если риск инквизиции достигнет предела (15) — дознание неизбежно.</div>
+      </div>
+
+      <div class="flagsrow" id="flagsRow"></div>
+    </div>
+
+    <div class="scenewrap" id="sceneWrap">
+      <div class="scenehead">
+        <div class="event-banner" id="eventBanner" style="display:none">
+          <span class="event-banner-badge">📜 Весть из внешнего мира</span>
+          <span class="event-banner-origin" id="eventOrigin">Королевский тракт</span>
+        </div>
+        <div class="chapter" id="sChapter"></div>
+        <h1 class="scenetitle" id="sTitle"></h1>
+        <div class="scenemeta" id="sMeta"></div>
+      </div>
+      <div id="artBox"></div>
+      <div class="desc" id="sDesc"></div>
+      <div class="choicelbl"><span id="sChoiceLbl">Твой шаг</span><i></i></div>
+      <div class="choices" id="sChoices"></div>
+      <div class="choicehint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-10-8-10-8a18.6 18.6 0 0 1 4.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>Последствия откроются после выбора</div>
+    </div>
+  </section>
+
+  <!-- ==================== ЭХО РЕШЕНИЯ ==================== -->
+  <section class="screen" id="scr-echo">
+    <div class="echo">
+      <div class="echohead">
+        <div class="chapter" id="eKicker">Последствие</div>
+        <h1>Эхо решения</h1>
+        <div class="echo-decision">
+          <div class="echo-decision-label">Твой выбор</div>
+          <blockquote class="echo-decision-quote" id="eChoice"></blockquote>
+        </div>
+      </div>
+      <div id="eArtBox"></div>
+      <div class="echobody">
+        <div class="echolead"><p id="eLeadText"></p></div>
+        <div class="lang" id="eLang" style="display:none"></div>
+      </div>
+      <div class="echochron"><div class="lbl"><span>Хроника отмечает</span><i></i></div><div class="deltas" id="eDeltas"></div></div>
+      <div class="rvp" id="eRvp" style="display:none">
+        <div class="rvp-header">
+          <svg class="rvp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-2H6a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2Z"/><path d="M8 5v12"/></svg>
+          <span class="rl">Хроника эпохи · Реальность vs Игрок</span>
+        </div>
+        <div class="rvp-grid">
+          <div class="rvp-item rvp-hist">
+            <div class="rvp-badge">XII век в реальности</div>
+            <p id="eReal"></p>
+          </div>
+          <div class="rvp-item rvp-player">
+            <div class="rvp-badge">Твой след</div>
+            <p id="ePlayer"></p>
+          </div>
+        </div>
+      </div>
+      <div class="flagnote" id="eFlag" style="display:none"></div>
+      <div class="flagnote" id="eRiskCalm" style="display:none"></div>
+      <div class="rankup" id="eRank" style="display:none">
+        <div class="rl">Новый статус</div>
+        <div class="rt" id="eRankTitle"></div>
+        <div class="rd" id="eRankDesc"></div>
+      </div>
+      <button class="btn top" onclick="advanceFromEcho()">Продолжить<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></button>
+    </div>
+  </section>
+
+  <!-- ==================== КОНЦОВКА ==================== -->
+  <section class="screen" id="scr-end">
+    <div class="ending" id="endBox">
+      <div id="endArt" style="width:100%;max-width:340px"></div>
+      <h1 id="endTitle"></h1>
+      <p id="endText"></p>
+      <div class="summary" id="endSummary"></div>
+      <button class="btn" onclick="restart()">Начать заново</button>
+    </div>
+  </section>
+
+  <!-- ==================== ПАНЕЛИ ==================== -->
+  <div class="panel" id="p-chron"><div class="pin">
+    <div class="phead"><div><div class="plbl">Дневник пути</div><h2>Летопись</h2></div>
+      <button class="pclose" onclick="closePanels()">✕</button></div>
+    <div id="chronList"></div>
+  </div></div>
+
+  <div class="panel" id="p-char"><div class="pin">
+    <div class="phead"><div><div class="plbl">Действующее лицо</div><h2>Брат Лука</h2></div>
+      <button class="pclose" onclick="closePanels()">✕</button></div>
+    <div id="charBody"></div>
+  </div></div>
+
+  <nav id="nav">
+    <div class="in">
+      <button onclick="openPanel('p-chron')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V5a2 2 0 0 1 2-2h11l3 3v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="label">Летопись</span></button>
+      <button onclick="openPanel('p-char')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="label">Герой</span></button>
+    </div>
+  </nav>
+
+  <div class="dlgwrap" id="dlg">
+    <div class="dlg">
+      <div class="dt" id="dlgTitle">Начать заново?</div>
+      <div class="dm" id="dlgMsg">Сохранённый путь будет утерян безвозвратно.</div>
+      <div class="dbtns">
+        <button class="cancel" onclick="closeDlg()">Отмена</button>
+        <button class="ok" id="dlgOk">Начать заново</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно реликвий -->
+  <div class="dlgwrap" id="relicDlg" onclick="if(event.target===this)closeRelicDlg()">
+    <div class="dlg relic-dlg-box">
+      <div class="relic-dlg-top">
+        <div class="relic-dlg-icon" id="relicDlgIcon"></div>
+        <div class="relic-dlg-badge" id="relicDlgType">Реликвия</div>
+      </div>
+      <div class="dt" id="relicDlgTitle">Название</div>
+      <div class="relic-dlg-sub" id="relicDlgSub">Свойство</div>
+      <div class="dm" id="relicDlgDesc" style="text-align:left;font-size:13px;line-height:1.55;margin-bottom:12px">Описание</div>
+      <div class="relic-dlg-quote" id="relicDlgQuote">«Цитата мыслей брата Луки»</div>
+      <div class="dbtns">
+        <button class="ok" onclick="closeRelicDlg()">Скрыть в рукав</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно портрета -->
+  <div class="dlgwrap" id="portraitDlg" onclick="if(event.target===this)closePortraitDlg()">
+    <div class="dlg portrait-dlg-box">
+      <div class="portrait-dlg-frame">
+        <img src="img/new_vers/art_luke.jpg" alt="Брат Лука" class="portrait-dlg-img">
+      </div>
+      <div class="dt" style="margin-top:14px;font-size:18px">Брат Лука из Пикардии</div>
+      <div class="relic-dlg-sub" style="margin-bottom:10px">1180 г. от Р.Х. · Орден св. Бенедикта</div>
+      <div class="dm" style="font-size:12.5px;line-height:1.5;margin-bottom:16px;text-align:center">«Взор устремлён сквозь века. В руках — перо переписчика и травы лазарета, в разуме — чертежи грядущего мира.»</div>
+      <div class="dbtns">
+        <button class="ok" onclick="closePortraitDlg()">Вернуться</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================================
+   АРХИТЕКТОР ИСТОРИИ — MVP
+   Реализует модель из architect_lore.md (раздел 5) и architect_design.md.
+   Вертикальный срез: Книга I, Главы 1–2 (Медицина, Сельское хозяйство).
+   ========================================================================= */
+
+const GAME = {
+  stats: {
+    prosperity:{label:"Процветание", max:10, start:4},
+    progress:  {label:"Прогресс",    max:10, start:2},
+    church:    {label:"Церковь",     max:10, start:6},
+    treasury:  {label:"Казна",       max:10, start:0, locked:true}
+  },
+  risk:{max:15,start:0},
+  ranks:[
+    {min:0,  title:"Монах",              desc:"Ты никто за пределами этих стен."},
+    {min:3,  title:"Лекарь",             desc:"Тебя знают по делу, не по имени."},
+    {min:5,  title:"Советник",           desc:"Аббат слушает, что ты скажешь. Открыта Казна."},
+    {min:12, title:"Учёный",             desc:"Твоё имя доходит до Парижа."},
+    {min:18, title:"Архитектор истории", desc:"Дальнейшее — твоих рук дело."}
+  ],
+  riskLevels:[
+    {min:0,max:3,label:"Спокойно"},
+    {min:4,max:7,label:"Наблюдение"},
+    {min:8,max:11,label:"Подозрение"},
+    {min:12,max:14,label:"Угроза ареста"},
+    {min:15,max:15,label:"Арест"}
+  ],
+  langNames:{1:"видение и откровение",2:"слова древних авторитетов",3:"обычай и личный опыт",4:"прямое знание — без прикрытия"},
+  endings:{
+    arrested:{title:"Арест инквизицией",art:"chapel",
+      text:"Подозрение достигло предела. За тобой пришли не с вопросами — с приговором. Свет XXI века гаснет на костре Сен-Дени.",win:false},
+    collapse:{title:"Разорённая обитель",art:"field",
+      text:"Процветание иссякло. Голод и болезнь сделали то, чего не сумела Инквизиция — стёрли всё, что ты пытался построить.",win:false},
+    excommunicated:{title:"Отлучение",art:"chapel",
+      text:"Церковь отвернулась от тебя прежде, чем успела испугаться. Без её щита ты — никто, и никто не защитит тебя от тех, кто пришёл следом.",win:false}
+  },
+
+  scenes:{
+
+    /* ================= ГЛАВА 1 — МЕДИЦИНА ================= */
+
+    s1_fever_ward:{chapter:1,chapterTitle:"Глава I — Медицина",title:"Лазарет",art:"infirmary",loc:"Лазарет аббатства",npc:"Брат Гийом",
+      body:"Воздух в лазарете густой — пот, моча, ладан, который жгут, чтобы перебить всё остальное. Третий брат за неделю лежит с той же лихорадкой: жар, понос, помутнение к вечеру. Гийом уже здесь — вскрывает вену на предплечье больного тонким ножом, бормочет молитву в такт каплям.\n\n— Дурная кровь выходит, — говорит он, не оборачиваясь. — К вечеру ему полегчает.\n\nЕму не полегчает. Ты смотришь на кувшин, из которого утром наполняли чаши для питья. Вода в нём — из того же ведра, которым вчера споласкивали тряпки после других больных.",
+      reality:"Кровопускание оставалось стандартом европейской медицины ещё шесть столетий; лихорадки в монастырских лазаретах убивали каждого третьего больного.",
+      player:"Гигиена питьевой воды введена в отдельно взятой обители на 700 лет раньше Земмельвейса.",
+      next:"s2_well",
+      choices:[
+        {text:"«Отец Гийом — я вскипячу воду, прежде чем её будут пить. Дома, в Пикардии, так делали при поветриях, и хворь отступала.»",
+         lang:3, effects:{prosperity:2}, risk:0, flags:["hygiene"],
+         lead:"Гийом хмурится, но кувшин уносят на кухню. К вечеру больному не легче — но наутро двое, что пили из того же кувшина, чувствуют себя лучше прежних дней."},
+        {text:"Промолчать. Забрать грязный кувшин под предлогом «вымыть как следует» — и просто больше не приносить воду оттуда.",
+         effects:{prosperity:1}, risk:1, effects2:{church:-1},
+         lead:"Никто ничего не заметил. Вода стала чище — но и ты стал чуть менее понятен тем, кто наблюдает за твоими тихими решениями."},
+        {text:"«Отец, дело не в крови. В самой воде — зараза, слишком мелкая, чтобы её увидеть.»",
+         lang:4, effects:{prosperity:2,progress:2}, risk:3, effects2:{church:-2}, flags:["hygiene","suspicion_guillaume"],
+         lead:"Гийом смотрит на тебя дольше, чем нужно для ответа. Он ничего не говорит — просто запоминает, что ты сказал."},
+        {text:"Ничего не делать. Помочь Гийому с кровопусканием, как велит устав.",
+         effects:{prosperity:-1}, risk:-1, effects2:{church:1},
+         lead:"Ты держишь таз для крови. Больному не легче. Гийом доволен твоим послушанием — и это единственное, что сегодня выросло."}
+      ]},
+
+    s2_well:{chapter:1,chapterTitle:"Глава I — Медицина",title:"Колодец",art:"well",loc:"Монастырский двор",npc:"Брат-келарь",
+      body:"Колодец стоит в двадцати шагах от выгребной ямы — так было всегда, и никто не видит в этом связи. Келарь считает случаи лихорадки испытанием, посланным на грехи обители. Ты видишь мутную воду и знаешь, что дело не в грехах.",
+      reality:"Связь между источником воды и распространением болезни не будет доказана до середины XIX века — до тех пор мутная вода оставалась просто нормой.",
+      player:"Простейшая фильтрация внедрена в обители на шесть веков раньше открытия Джона Сноу.",
+      next:"s3_question",
+      choices:[
+        {text:"Построить песчаный фильтр у сруба — «по примеру, что видел в других землях».",
+         lang:3, effects:{prosperity:2}, risk:0,
+         lead:"Чистая вода течёт через камень и песок. Никто не спрашивает, откуда идея — фильтры выглядят достаточно похожими на что-то знакомое."},
+        {text:"Записать наблюдение о природе воды — короткий трактат для библиотеки скриптория.",
+         lang:2, effects:{progress:2}, risk:2, effects2:{church:1}, flags:["scribe"],
+         lead:"Рукопись ложится на полку скриптория. Кто-то её прочтёт — а значит, у твоих мыслей появится собственная жизнь, отдельная от тебя."},
+        {text:"Убедить келаря через молитву — «пусть вода тоже пройдёт очищение, как душа».",
+         lang:1, effects:{church:2,prosperity:1}, risk:1,
+         lead:"Келарь кивает — язык веры он понимает лучше языка гигиены. Колодец накрывают, воду для питья берут отдельно, «освящённой» кружкой."}
+      ]},
+
+    s3_question:{chapter:1,chapterTitle:"Глава I — Медицина",title:"Вопрос без свидетелей",art:"cell",loc:"Келья брата Луки, поздний вечер",npc:"Брат Гийом",
+      body:"Гийом приходит один, без света, кроме своей свечи. Он садится на край лежанки и долго молчит, прежде чем спросить:\n\n— Брат Лука. Твои руки лечат так, как не лечат руки, обученные здесь. Я не спрашиваю, откуда в тебе это. Я спрашиваю — чем мне это назвать, когда меня спросят?",
+      reality:"Монахов, чьё знание не имело понятной родословной — учителя, книги, традиции, — Церковь этого века систематически подозревала в связи с запретным.",
+      player:"Впервые в игре ты выбираешь не действие, а язык, на котором объяснишь всё, что уже сделал.",
+      next:"s4_toma",
+      choices:[
+        {text:"«Мне было видение в горячке, отец. Ангел велел мне очищать воду и раны — Божественным огнём и Божественной чистотой.»",
+         lang:1, effects:{church:2}, risk:2,
+         lead:"Гийом крестится. Это он готов повторить перед кем угодно — видение звучит как то, во что он и сам хочет верить."},
+        {text:"«Я читал Галена, отец. Он писал, что чистота предотвращает гниение — я лишь следую мудрости, которую церковь уже приняла.»",
+         lang:2, effects:{church:1,progress:1}, risk:1,
+         lead:"Гийом задумчиво кивает. Ссылка на признанный авторитет успокаивает его — с античными текстами он спорить не будет."},
+        {text:"«Я видел это в детстве, отец. Там, откуда я родом, так лечили всегда — я просто помню, что работает.»",
+         lang:3, effects:{prosperity:1}, risk:0,
+         lead:"Гийом пожимает плечами — объяснение скромное и почти скучное. Скучное — это безопасно."},
+        {text:"Сказать как есть: то, что ты знаешь, действует — а имя этому знанию здесь ещё не придумали.",
+         lang:4, effects:{progress:2}, risk:4, effects2:{church:-2}, flags:["suspicion_guillaume"],
+         lead:"Гийом долго смотрит на пламя свечи, потом на тебя. Он уходит, не сказав больше ни слова — и это страшнее, чем если бы он накричал."}
+      ]},
+
+    s4_toma:{chapter:1,chapterTitle:"Глава I — Медицина",title:"Ученик",art:"scriptorium",loc:"Скрипторий, после вечерни",npc:"Послушник Тома",
+      body:"Тома моложе тебя телом Луки — но не намного. Он подходит сам, неловко, с чернилами на пальцах.\n\n— Брат Лука... научи меня тому, что ты знаешь про воду и раны. Я всё запомню. Я никому не скажу, откуда это.\n\nОн не понимает, что обещает то, чего не сможет удержать — не по злому умыслу, а потому что четырнадцать лет никого не учили хранить чужие тайны.",
+      reality:"Передача практического знания через личное ученичество была единственным надёжным каналом распространения технологий в отсутствие печати.",
+      player:"Тома становится первым человеком, которому Лука передаёт знание напрямую, а не через уловку.",
+      next:"s5_plague_village",
+      choices:[
+        {text:"Взять его в ученики полностью, ничего не утаивая.",
+         effects:{progress:2}, risk:1, flags:["toma_trusted"],
+         lead:"Тома учится жадно и быстро. Он станет твоим голосом там, куда ты сам дойти не успеешь — или твоей первой ошибкой, если не удержит язык."},
+        {text:"Учить только тому, что не вызовет вопросов — без объяснений «почему».",
+         effects:{prosperity:1,church:1}, risk:0,
+         lead:"Тома получает ремесло без сути. Он умеет, но не понимает — и вряд ли сможет объяснить, если его спросят напрямую."},
+        {text:"Отказать. «Это не твоя ноша, брат.»",
+         effects:{church:1}, risk:-1, effects2:{prosperity:-1},
+         lead:"Тома уходит, не споря — но взгляд у него такой, каким бывает у человека, которому не доверили важное. Он это запомнит."}
+      ]},
+
+    s5_plague_village:{chapter:1,chapterTitle:"Глава I — Медицина · Кризис",title:"Деревня зовёт",art:"village",loc:"Деревня у дороги на Париж",npc:"Крестьянка Ивонна",
+      body:"Женщина стоит у ворот обители с рассвета — босая, в грязи по колено. В деревне трое детей с той же лихорадкой, что унесла братьев в лазарете. Она слышала — от кого-то, слишком многие уже слышали — что послушник Лука умеет то, чего не умеет цирюльник.\n\nВыходить монаху за стены без дозволения — нарушение устава. Дети не доживут до дозволения.",
+      reality:"Монахи Средневековья крайне редко оказывали медицинскую помощь мирянам за пределами стен — это подрывало границу между духовным и мирским, которую Церковь берегла ревниво.",
+      player:"Первый выход знания за стены монастыря — от отдельной кельи к целой деревне.",
+      next:"s6_gate",
+      choices:[
+        {text:"Пойти самому, немедленно, и сделать всё, что умеешь, открыто.",
+         effects:{prosperity:3}, risk:3,
+         lead:"Дети выживают. Половина деревни видела твои руки за работой — теперь у Луки есть имя за пределами стен, и это имя летит быстрее, чем ты успеваешь за ним угнаться."},
+        {text:"Послать Тому с точными указаниями — сам остаться в тени.",
+         effects:{prosperity:2}, risk:1, flags:["toma_sent"],
+         requiresFlag:"toma_trusted",
+         lead:"Тома справляется — неуверенно, но справляется. Твоё имя не звучит в деревне вовсе, только его — и это к лучшему."},
+        {text:"Отказать — устав есть устав, а нарушение будет замечено быстрее, чем спасённые дети.",
+         effects:{church:2}, risk:-1, effects2:{prosperity:-2},
+         lead:"Ивонна уходит ни с чем. К вечеру ты слышишь плач со стороны деревни — и понимаешь его причину без объяснений."}
+      ]},
+
+    /* ================= ПЕРЕХОД МЕЖДУ ГЛАВАМИ ================= */
+
+    s6_gate:{chapter:1,chapterTitle:"Между главами",title:"Проходит время",art:"abbey",loc:"Аббатство, конец весны",npc:null,
+      body:"Недели складываются в месяц. Лихорадка отступает — не потому что кончилась зима, а потому что вода в обители чище, чем была. Гийом больше не спорит с тобой о кипячёной воде — он сам о ней напоминает келарю.\n\nАббат вызывает тебя редко и коротко, но однажды говорит — почти без выражения: «Урожай в этом году решит больше, чем твои примочки, брат Лука. Ты разбираешься в земле так же, как в ранах?»",
+      reality:null, player:null,
+      next:"s7_field",
+      choices:[
+        {text:"«Разбираюсь, отец аббат. Позвольте показать.»",
+         lang:4, effects:{}, risk:0,
+         lead:"Аббат коротко кивает — не благословение, но и не отказ. Дверь в дела земли приоткрыта."},
+        {text:"«Я лишь наблюдал за землёй, как наблюдал за ранами, отец аббат — не более того.»",
+         lang:2, effects:{church:1}, risk:-1,
+         lead:"Скромный ответ аббату по нраву больше уверенного — он отпускает тебя к полю без лишних вопросов."},
+        {text:"Промолчать и просто кивнуть — пусть дело говорит вместо слов.",
+         effects:{}, risk:0,
+         lead:"Аббат не настаивает на объяснении. Он привык, что от брата Луки больше пользы, чем речей."}
+      ]},
+
+    /* ================= ГЛАВА 2 — СЕЛЬСКОЕ ХОЗЯЙСТВО ================= */
+
+    s7_field:{chapter:2,chapterTitle:"Глава II — Сельское хозяйство",title:"Три поля",art:"field",loc:"Общинное поле у дороги",npc:"Староста Симон",
+      body:"Три полосы земли, одна из них пустует под паром — так делали деды, и дед дедов. Симон стар и упрям, и он прав по всем правилам, которые знает:\n\n— Земля отдыхает, брат. Тронь её раньше срока — она обеднеет, и на будущий год не даст ничего.\n\nТы знаешь про бобовые и клубеньковые бактерии на их корнях — слов для этого здесь нет, но принцип можно показать, не называя.",
+      reality:"Двухпольная система с обязательным паром господствовала в Северной Франции до XI–XII веков; трёхполье распространялось медленно и неравномерно.",
+      player:"Севооборот с бобовыми внедрён на одном поле на десятилетия раньше массового распространения практики в регионе.",
+      next:"s8_grain",
+      choices:[
+        {text:"«Посади на пустующей полосе бобы да вику — так делали в местах, откуда я родом, и земля не беднела.»",
+         lang:3, effects:{prosperity:2}, risk:0, flags:["threefield"],
+         lead:"Симон недоверчиво соглашается — «на пробу, одна полоса». Урожай будет виден только через сезон."},
+        {text:"Объяснить Симону, что земля восстанавливается через сами растения, не только через отдых.",
+         lang:4, effects:{progress:2}, risk:2, flags:["threefield"],
+         lead:"Симон слушает, хмурясь — это не укладывается в то, что он знает о земле. Он делает, как ты просишь, но без уверенности, что делает правильно."},
+        {text:"Не вмешиваться в этом сезоне — рано.",
+         effects:{}, risk:-1,
+         lead:"Поле остаётся под паром. Ничего не меняется — ни к лучшему, ни к худшему."}
+      ]},
+
+    s8_grain:{chapter:2,chapterTitle:"Глава II — Сельское хозяйство",title:"Амбар",art:"hall",loc:"Монастырский амбар",npc:"Брат-келарь",
+      body:"Прошлогоднее зерно в амбаре тронуто плесенью и мышами — обычная убыль, к которой все давно привыкли. Ты знаешь про сушку зерна перед закладкой и про то, что мешает мышам куда надёжнее заклинаний.",
+      reality:"Потери хранимого зерна от вредителей и сырости в Средние века нередко достигали трети урожая ещё до наступления весны.",
+      player:"Простая сушка и защита закромов сокращает потери зерна задолго до появления научной агрономии хранения.",
+      next:null,
+      choices:[
+        {text:"Показать келарю, как правильно просушивать зерно перед укладкой в закрома.",
+         lang:3, effects:{prosperity:2,progress:1}, risk:1,
+         lead:"Келарь бурчит, что «отцы и деды так не делали» — но делает. К зиме разница будет заметна по весу зерна, не по словам."},
+        {text:"Предложить освятить амбар и обновить обереги от порчи — это тоже часть решения, если люди в него верят.",
+         lang:1, effects:{church:2,prosperity:1}, risk:0,
+         lead:"Келарь доволен — обряд его успокаивает. Заодно, по твоему тихому совету, амбар всё же перекладывают суше, «для верности обряда»."},
+        {text:"Ничего не менять — не твоё дело указывать келарю, как хранить зерно.",
+         effects:{prosperity:-1}, risk:0,
+         lead:"Всё остаётся как есть. Часть зерна, как обычно, будет потеряна до весны."}
+      ]},
+
+    s9a_toma_field:{chapter:2,chapterTitle:"Глава II — Сельское хозяйство",title:"Голос за стенами",art:"field",loc:"Общинное поле",npc:"Послушник Тома",
+      body:"Тома пришёл на поле сам, без спросу — он слышал о бобах и трёхполье и уже объясняет Симону что-то своими словами, путая половину терминов, но точно передавая суть. Крестьяне слушают его охотнее, чем стали бы слушать монаха из аббатства — Тома для них почти свой.",
+      reality:"Знание, переданное через ровесника и почти-соседа, распространялось в крестьянской среде значительно быстрее, чем через официальные церковные каналы.",
+      player:"Тома становится вторым — и куда более быстрым — каналом передачи знания, чем сам герой.",
+      next:"s10_drought",
+      choices:[
+        {text:"Позволить Томе продолжать — пусть учит крестьян сам, своими словами.",
+         effects:{prosperity:2,influence:2}, risk:2,
+         lead:"Знание расходится по деревне быстрее, чем ты рассчитывал. Быстрее — значит и заметнее."},
+        {text:"Мягко осадить Тому — пусть говорит меньше и только то, в чём уверен.",
+         effects:{prosperity:1,influence:1}, risk:0,
+         lead:"Тома немного обижен, но слушается. Слухи расходятся тише — и медленнее."}
+      ]},
+
+    s9b_no_toma:{chapter:2,chapterTitle:"Глава II — Сельское хозяйство",title:"Слухи без имени",art:"field",loc:"Общинное поле",npc:"Староста Симон",
+      body:"Слухи о поле, что дало на треть больше прежнего, доходят и без чьей-либо помощи — крестьяне сами не молчат об удаче. Симон отвечает на расспросы соседей уклончиво: «Так деды делали, просто подзабыли». Он не лжёт со зла — он и сам почти в это верит.",
+      reality:"Успешные аграрные новшества эпохи нередко присваивались традиции задним числом — обществу было проще объявить новое старым, чем признать разрыв с укладом.",
+      player:"Знание распространяется медленнее, но и куда незаметнее для героя лично — Симон невольно берёт на себя роль прикрытия.",
+      next:"s10_drought",
+      choices:[
+        {text:"Не поправлять Симона. Пусть люди думают, что вспомнили забытое.",
+         effects:{prosperity:1}, risk:-1,
+         lead:"Легенда о «забытом обычае предков» приживается сама. Тебе не нужно было даже её придумывать."},
+        {text:"Мягко подсказать Симону сослаться на странствующего брата, а не на память дедов — ближе к правде, дальше от лжи.",
+         lang:2, effects:{church:1}, risk:0,
+         lead:"Симон меняет объяснение на «слышал от заезжего монаха» — не совсем правда, но и не выдумка вовсе."},
+        {text:"Прямо сказать соседям, что метод — твой, а не забытый обычай.",
+         lang:4, effects:{influence:1}, risk:2,
+         lead:"Правда расходится по деревне быстрее, чем легенда, — и вместе с ней твоё имя звучит там, где раньше не звучало вовсе."}
+      ]},
+
+    s10_drought:{chapter:2,chapterTitle:"Глава II — Сельское хозяйство · Кризис",title:"Сухое лето",art:"field",loc:"Пересохшее русло ручья",npc:"Староста Симон",
+      body:"Дождя нет третью неделю. Ручей, что питал огороды, обмелел до цепочки луж. Симон стоит над трещинами в земле и впервые за всё время выглядит не упрямым, а просто испуганным.",
+      reality:"Летние засухи периодически уничтожали урожай целых регионов Франции XII века, напрямую запуская циклы голода на 1–2 года вперёд.",
+      player:"Элементарная ирригация — не изобретение, а перенос знания, которое здесь просто не додумались применить к этому ручью.",
+      next:"s11_harvest",
+      choices:[
+        {text:"Показать, как отвести остаток воды через простую канаву к самым нужным грядкам.",
+         lang:3, effects:{prosperity:2,progress:1}, risk:1,
+         lead:"Вода идёт туда, где нужнее всего. Огороды не спасены полностью, но и не потеряны."},
+        {text:"Организовать общую молитву о дожде вместе с братией и деревней.",
+         lang:1, effects:{church:2}, risk:-1, effects2:{prosperity:-1},
+         lead:"Дождь приходит через неделю — как приходит рано или поздно всегда. Никто не свяжет это с твоим молчанием о канаве, которую ты не предложил."},
+        {text:"Открыть монастырский резерв зерна для самых бедных дворов деревни, пока не пройдёт худшее.",
+         effects:{prosperity:2}, risk:0, effects2:{church:1},
+         lead:"Резерв тает быстрее, чем хотелось бы аббату — но никто в деревне не голодает этим летом."}
+      ]},
+
+    s11_harvest:{chapter:2,chapterTitle:"Глава II — Сельское хозяйство · Финал главы",title:"Жатва",art:"field",loc:"Общинное поле, время сбора",npc:"Староста Симон",
+      body:"Полоса, что засеяли бобами, даёт больше, чем ждал даже ты — Симон стоит среди снопов и молчит дольше обычного, прежде чем произнести то, что явно стоило ему усилий:\n\n— Ты был прав насчёт земли, брат Лука. Не знаю, откуда в тебе это. Но прав.",
+      reality:"Признание крестьянской общиной пришлого монастырского авторитета в вопросах земледелия было редкостью — обычно происходило обратное.",
+      player:"Первая устойчивая победа, которую подтверждает не Церковь и не аббат, а сама земля и человек, который на ней работает.",
+      next:"s12_finale",
+      choices:[
+        {text:"Разделить лишнее зерно с самыми бедными дворами деревни.",
+         effects:{prosperity:1,influence:2,church:1}, risk:0,
+         lead:"Деревня запомнит этот год надолго. Имя Луки теперь звучит там не только рядом со словом «лихорадка»."},
+        {text:"Убедить аббата отложить излишек в монастырский резерв — на будущий неурожайный год.",
+         effects:{prosperity:3}, risk:0,
+         lead:"Амбары полны как никогда. Осторожность сегодня — это меньше страха следующей зимой."},
+        {text:"Предложить продать часть излишка на ближайшем торгу — обители пригодятся не только зёрна.",
+         effects:{influence:2}, risk:1,
+         lead:"Монеты в казну аббатства — новый разговор, которого раньше просто не было. Аббат смотрит на тебя чуть иначе."}
+      ]},
+
+    s12_finale:{chapter:2,chapterTitle:"Между книгами",title:"Конец Книги I",art:"abbey",loc:"Аббатство, конец лета",npc:null,
+      body:"Брат Лука провёл свою первую весну и лето знанием, которое не мог объяснить, и осторожностью, которая пока его не выдала. Лазарет чище, поле богаче, имя его звучит и в деревне, и за монастырским столом.\n\nАббат вызывает его снова — не с благодарностью в голосе, а с той сухой озабоченностью, с какой смотрят на цифры, которые не сходятся. «Брат Лука. Ты умеешь то, чего не умеют другие. Мне нужно, чтобы в этот раз это была не земля и не кровь — а амбарные книги.»",
+      reality:null, player:null,
+      next:"s13_ledger",
+      choices:[
+        {text:"«Я слушаю, отец аббат.»",
+         effects:{}, risk:0,
+         lead:"Ты идёшь за ним в покои капитула — впервые не как проситель и не как исполнитель, а как тот, кого позвали разбираться."},
+        {text:"«Цифры пугают меня меньше, чем лихорадка, отец аббат — покажите, что не сходится.»",
+         lang:3, effects:{influence:1}, risk:0,
+         lead:"Аббат чуть заметно улыбается — редкость для него. «Тогда идём — пусть цифры испугаются тебя, а не наоборот.»"},
+        {text:"Спросить прямо, почему выбор пал на простого брата, а не на эконома или келаря.",
+         effects:{church:1}, risk:1,
+         lead:"«Потому что эконом и келарь — часть той самой путаницы, брат Лука», — отвечает аббат сухо. Вопрос был честным, ответ — тоже."}
+      ]},
+
+    s13_ledger:{chapter:3,chapterTitle:"Глава III — Экономика",title:"Книги, которые не сходятся",art:"chapterhouse",loc:"Капитулярный зал аббатства",npc:"Аббат Одон",
+      body:"Аббат Одон раскладывает на столе восковые таблички и обрывки пергамента — учёт ведётся кто во что горазд: келарь считает зерно мешками, эконом — деньги марками, писец — десятинные сборы своей меркой, и ни одна колонка не сходится с другой.\n\n«Каждый год мы недосчитываемся то зерна, то серебра, и никто не может сказать, куда оно уходит — до времени сбора урожая, до расплаты с людьми Симона. Ты видел, как лечат тело. Может, ты видишь и то, как течёт богатство обители?»",
+      reality:"Учёт в монастырских хозяйствах XII века вёлся разрозненно, разными мерами и разными людьми — систематическая двойная запись появится в Европе только в XIV–XV веках, у итальянских купцов.",
+      player:"Единая система счёта — приход и расход в одних и тех же цифрах — внедряется в отдельно взятой обители на два столетия раньше своего исторического часа.",
+      next:"s14a_guillaume_trust",
+      choices:[
+        {text:"«Дайте мне одну книгу на всё хозяйство. Одни цифры, один счёт — приход слева, расход справа, каждый день.»",
+         lang:4, effects:{progress:2,prosperity:1,treasury:1}, risk:2, effects2:{church:-1}, flags:["ledger"],
+         lead:"Аббат долго смотрит на пустой разворот новой книги — метод ему непривычен, почти дерзок в своей голой простоте. Но он кивает и отдаёт распоряжение келарю. Уже в первый месяц счёт находит серебро, что раньше просто «терялось» между мерами."},
+        {text:"«Отец аббат, святой Бенедикт учил к порядку во всём — я лишь предлагаю вести амбарные книги внимательнее, по единому образцу.»",
+         lang:2, effects:{progress:1,church:1}, risk:1,
+         lead:"Ссылка на устав успокаивает аббата больше, чем сам метод. Он соглашается — «внимательнее» звучит безопаснее, чем «по-новому»."},
+        {text:"Не лезть в дела аббата — вести счёт не забота простого брата.",
+         effects:{church:1}, risk:-1, effects2:{progress:-1},
+         lead:"Аббат кивает, не настаивая. Цифры продолжают не сходиться — но это уже не твоя забота, а его тревога."}
+      ]},
+
+    s14a_guillaume_trust:{chapter:3,chapterTitle:"Глава III — Экономика",title:"Разговор со своим",art:"infirmary",loc:"Лазарет аббатства",npc:"Брат Гийом",
+      body:"Гийом застаёт тебя над новой конторской книгой и не удивляется — за прошедший год он привык, что у брата Луки на всё находится метод. «Раз уж ты считаешь зерно и серебро — посчитай и травы. Половина того, что мы покупаем у торговцев, дороже, чем стоит, а половина того, что растёт у нас во дворе, гниёт неучтённой.»",
+      reality:"Монастырские лазареты закупали часть снадобий у мирских торговцев по ценам, которые редко кто-либо в обители был в силах проверить или оспорить.",
+      player:"Первый союзник героя внутри стен становится и первым, кто добровольно встраивает своё хозяйство в новую систему счёта.",
+      next:"s15a_toma_scribe",
+      choices:[
+        {text:"Пересчитать вместе с ним весь травяной запас лазарета и завести для него отдельную страницу.",
+         effects:{prosperity:1,church:1}, risk:0, flags:["guillaume_ally"],
+         lead:"Вы считаете до темноты, при одной свече, как год назад считали пульс лихорадящих. Гийом впервые называет тебя не «брат», а по имени."},
+        {text:"Дать ему свободный лист и научить основам счёта — пусть ведёт сам.",
+         effects:{progress:1}, risk:1, flags:["guillaume_ally"],
+         lead:"Гийом хмурится над цифрами дольше, чем над ранами, но упрямо доводит страницу до конца. Метод переживёт тебя в его руках, даже если ты уйдёшь."}
+      ]},
+
+    s14b_guillaume_watch:{chapter:3,chapterTitle:"Глава III — Экономика",title:"Разговор под взглядом",art:"infirmary",loc:"Лазарет аббатства",npc:"Брат Гийом",
+      body:"Гийом не спрашивает прямо, но провожает взглядом каждую твою запись в новой книге — с той поры в келье он ничего не забыл, просто не назвал вслух. «Ты теперь и цифры знаешь так же уверенно, как раны, брат Лука. Любопытно, где во Пикардии учат считать зерно так, как ты.»",
+      reality:"Монах, чьи практические познания выходили за пределы ожидаемого для его положения, неизбежно привлекал к себе внимание собственной общины прежде, чем внимание извне.",
+      player:"Здесь впервые видно: главный риск героя — не инквизитор из города, а человек, который слишком долго смотрел на него слишком внимательно.",
+      next:"s15a_toma_scribe",
+      choices:[
+        {text:"«Считать я научился там же, где лечить, отец Гийом — по нужде, а не по книге.»",
+         lang:3, effects:{prosperity:1}, risk:0,
+         lead:"Гийом кивает — ответ скромный, почти неинтересный. Он отпускает тему, хотя взгляд его теплее не становится."},
+        {text:"Прямо спросить, что его тревожит, и предложить работать над книгами вместе — на виду, а не тайно.",
+         effects:{church:1}, risk:1, flags:["guillaume_ally"],
+         lead:"Гийом не ожидал прямоты в ответ на подозрение. Он соглашается — теперь, по крайней мере, он видит каждую цифру своими глазами."},
+        {text:"Ничего не объяснять и просто сменить тему.",
+         effects:{}, risk:2, flags:["guillaume_uneasy"],
+         lead:"Гийом больше не спрашивает — но и не забывает. Молчание между вами теперь весит больше, чем весило до разговора."}
+      ]},
+
+    s15a_toma_scribe:{chapter:3,chapterTitle:"Глава III — Экономика",title:"Писец капитула",art:"scriptorium",loc:"Скрипторий",npc:"Послушник Тома",
+      body:"Тома давно ждал повода быть полезным иначе, чем переписыванием чужих слов — новая книга счёта становится его книгой почти сразу. Он выводит колонки ровнее, чем ты сам, и уже через неделю поправляет келаря, когда тот путает меру.",
+      reality:"Грамотный послушник, однажды допущенный к ведению хозяйственных записей, нередко становился в общине более влиятельной фигурой, чем формальный его сан позволял.",
+      player:"Тома получает первую роль, которая принадлежит ему самому, а не является отражением того, чему научил его брат Лука.",
+      next:"s16_credit",
+      choices:[
+        {text:"Официально закрепить за Томой ведение книги — при аббате, вслух.",
+         effects:{influence:2,progress:1}, risk:1, flags:["toma_scribe"],
+         lead:"Аббат удивлён, но не спорит — работа сделана лучше, чем сделал бы келарь. Имя Томы отныне звучит в капитуле наравне с именем Луки."},
+        {text:"Оставить его при книге неофициально — работа есть, признания нет.",
+         effects:{prosperity:1}, risk:0,
+         lead:"Тома продолжает считать в тени, без похвалы. Он не жалуется — но замечает, кому достаётся признание за его цифры."}
+      ]},
+
+    s15b_toma_outside:{chapter:3,chapterTitle:"Глава III — Экономика",title:"Любопытство без урока",art:"scriptorium",loc:"Скрипторий",npc:"Послушник Тома",
+      body:"Тома не был допущен в твою науку раньше — но новая книга лежит открыто на пюпитре, и он разглядывает столбцы цифр украдкой, между переписыванием псалмов, пытаясь понять систему сам, без объяснений.",
+      reality:"Внимательный переписчик мог реконструировать чужую систему счёта по одним лишь заполненным страницам — грамотность эпохи была избирательной, но не наивной.",
+      player:"Знание расходится и без твоего участия — медленнее и менее точно, но и менее заметно для тебя самого.",
+      next:"s16_credit",
+      choices:[
+        {text:"Заметить его любопытство и наконец объяснить основы — поздно, но честно.",
+         effects:{progress:1}, risk:1, flags:["toma_scribe"],
+         lead:"Тома благодарен больше, чем если бы ты научил его год назад — теперь это выглядит как доверие, а не как урок по расписанию."},
+        {text:"Забрать книгу и не давать ему повода гадать дальше.",
+         effects:{church:1}, risk:-1, effects2:{prosperity:-1},
+         lead:"Тома больше не подходит к пюпитру с цифрами. Любопытство никуда не делось — просто ушло туда, где ты его не увидишь."}
+      ]},
+
+    s16_credit:{chapter:3,chapterTitle:"Глава III — Экономика",title:"Доля вместо долга",art:"hall",loc:"Монастырский амбар, день расчётов",npc:"Брат-келарь",
+      body:"Крестьяне приходят за семенным зерном в долг, как приходили всегда, — а возвращают не всегда столько же, сколько взяли: недород, болезнь, смерть скотины. Келарь считает это Божьей волей и просто прощает или взыскивает по настроению. Ты знаешь, что можно иначе — без процента, запрещённого церковью, но и без произвола: доля от будущего урожая, оговорённая заранее.",
+      reality:"Каноническое право XII века прямо запрещало ростовщичество — взимание процента как такового; при этом доля урожая или встречный труд ростовщичеством не считались, оставаясь в серой законной зоне.",
+      player:"Простейшая форма долевого договора — предок аренды и партнёрства — вводится в общине на основе одной лишь житейской логики, без слова «процент».",
+      next:"s17_market_crisis",
+      choices:[
+        {text:"«Пусть берут зерно не в долг, а в долю — вернут не столько же, а часть будущего урожая, по уговору заранее.»",
+         lang:3, effects:{prosperity:2,progress:1,treasury:2}, risk:1, flags:["credit_shares"],
+         lead:"Келарь чешет затылок — способ странный, но по сути честный, и никто не сможет обвинить обитель в ростовщичестве, раз речи о проценте нет. Доля с урожая, в отличие от голого долга, впервые оседает в закромах обители, а не тает в устных обещаниях."},
+        {text:"«Отец келарь, это не прибыль, а забота обители о своих же людях — просто запишем уговор, чтобы никто не спорил после жатвы.»",
+         lang:1, effects:{church:2,prosperity:1,treasury:1}, risk:0,
+         lead:"Келарь охотно соглашается, когда слышит слово «забота» вместо слова «счёт». Уговор ложится в книгу Томы — теперь споров о долге станет меньше, а вместе с ними и потерь в закромах."},
+        {text:"Не менять ничего — долг остаётся долгом, а решение — за келарём, как раньше.",
+         effects:{church:1}, risk:-1, effects2:{prosperity:-1},
+         lead:"Всё остаётся как было. К зиме кто-то из должников снова окажется должен больше, чем может отдать."}
+      ]},
+
+    s17_market_crisis:{chapter:3,chapterTitle:"Глава III — Экономика · Кризис",title:"Слухи на торгу",art:"market",loc:"Рыночная площадь у стен города",npc:"Купец Обер",
+      body:"На торгу Обер, торговец зерном и сукном, громко жалуется каждому, кто слушает: обитель, дескать, ведёт счёт «не по-божески», брат Лука знает цифры лучше иного менялы, а «кто так считает — тот либо учился у сарацин, либо у кого похуже». Половина рынка смеётся, половина — крестится.\n\nСлух дошёл до тебя быстрее, чем ты успел его опровергнуть.",
+      reality:"Обвинение в «нехристианском» знании было в первую очередь орудием рыночной конкуренции — купцы использовали язык ереси друг против друга задолго до того, как им заинтересовывалась настоящая Инквизиция.",
+      player:"Первая угроза герою приходит не от Церкви и не от аббата, а от соседа по ремеслу, задетого честной конкуренцией.",
+      next:"s18_symeon_debt",
+      choices:[
+        {text:"Прийти к Оберу лично и прямо показать книги — пусть видит, что там нет ничего, кроме цифр.",
+         effects:{prosperity:1}, risk:3, flags:["suspicion_guillaume2"],
+         lead:"Обер листает страницы, не понимая и половины — но само твоё спокойствие сбивает его с толку сильнее, чем любое объяснение. Слух не гаснет, а вот жар его спадает."},
+        {text:"«Обер, ты торгуешь зерном не первый год — назови мне цифру лучше моей, и я запишу твою, а не свою.»",
+         lang:4, effects:{influence:2,progress:1}, risk:4, effects2:{church:-1},
+         lead:"Обер не находится с ответом при свидетелях — и это унижение он запомнит надолго. Слух умолкает на рынке, но не в голове Обера."},
+        {text:"Не отвечать вовсе и попросить аббата вступиться словом за обитель.",
+         effects:{church:1}, risk:0,
+         lead:"Аббат коротко осаживает Обера при следующей встрече капитула с городом. Слух стихает сам — но ты так и не узнаешь, насколько ему поверили."}
+      ]},
+
+    s18_symeon_debt:{chapter:3,chapterTitle:"Глава III — Экономика",title:"Долг за сухое лето",art:"field",loc:"Общинное поле, конец сбора",npc:"Староста Симон",
+      body:"Симон приходит сам, без Ивонны и без свидетелей — то самое зерно, что обитель открыла для деревни в засуху, числится за ним долгом, а урожай в этом году хорош, но не настолько, чтобы вернуть всё и не остаться голодным к весне. Он не просит — он просто кладёт на стол то, что может, и ждёт.",
+      reality:"Долговая кабала после голодных лет была одной из главных причин, по которым свободные крестьяне теряли землю и переходили в зависимость от монастырских или сеньориальных хозяйств.",
+      player:"Первое испытание системы, которую герой сам построил: работает ли доля-вместо-долга тогда, когда ей больнее всего быть справедливой.",
+      next:"s19_finale3",
+      choices:[
+        {text:"Простить остаток долга — записать в книге Томы как «закрыто по неурожаю».",
+         requiresFlag:"credit_shares",
+         effects:{prosperity:2,influence:1,treasury:-2}, risk:0, effects2:{church:-1},
+         lead:"Симон молчит дольше, чем над снопами год назад. Деревня запомнит этот жест дольше, чем запомнила бы саму засуху — а недостачу закрывает то самое серебро, что казна успела накопить с других уговоров."},
+        {text:"Растянуть остаток на будущий год без всякой доли сверху — долг остаётся долгом, но не душит.",
+         effects:{prosperity:1,church:1}, risk:0,
+         lead:"Симон кивает — не с благодарностью, а с облегчением человека, который ждал худшего ответа. Книга Томы получает новую отметку на будущий год."},
+        {text:"Взыскать по уговору полностью — обители тоже нужно зерно на зиму.",
+         effects:{prosperity:1,treasury:1}, risk:1, effects2:{influence:-1},
+         lead:"Симон расплачивается до последней меры и уходит, ничего не сказав. В деревне об этом будут помнить дольше, чем о самой доле — но закрома и казна обители к зиме полны."}
+      ]},
+
+    s19_finale3:{chapter:3,chapterTitle:"Между главами",title:"Капитул подводит счёт",art:"abbey",loc:"Аббатство, конец осени",npc:null,
+      body:"Аббат Одон закрывает книгу Томы на последней исписанной странице года и впервые не хмурится над цифрами — они сходятся. «Ты пришёл сюда братом без имени за стенами, брат Лука. Теперь у обители есть счёт, которому можно верить — и это тоже твоих рук дело.»\n\nОн не отпускает тебя сразу. «Раз уж зерна теперь больше, чем когда-либо, — старая мельница на реке не поспевает его молоть. Я нанял мастера со стороны. Взгляни на него — мне нужен твой глаз, не только моя вера в подрядчика.»",
+      reality:null, player:null,
+      next:"s20_mill_proposal",
+      choices:[
+        {text:"«Я взгляну, отец аббат.»",
+         effects:{}, risk:0,
+         lead:"Ты идёшь к реке впервые не за водой и не за должником — а за человеком, которого никто из братии ещё не видел за работой."},
+        {text:"«Мастера со стороны часто судят по слухам раньше, чем по делу — дайте мне увидеть его руки прежде, чем его репутацию.»",
+         lang:3, effects:{progress:1}, risk:0,
+         lead:"Аббат кивает — сказано по-хозяйски, без лишней почтительности к чужому имени. «Значит, суди сам, брат Лука.»"},
+        {text:"Спросить, во сколько обители обойдётся наёмный мастер, прежде чем идти к реке.",
+         effects:{}, risk:-1, effects2:{progress:-1},
+         lead:"Аббат отвечает не сразу — сумма звучит внушительно. «Оттого мне и нужен твой глаз, а не только мой счёт», — говорит он суше обычного."}
+      ]},
+
+    /* ================= ГЛАВА 4 — ИНФРАСТРУКТУРА ================= */
+
+    s20_mill_proposal:{chapter:4,chapterTitle:"Глава IV — Инфраструктура",title:"Мастер со стороны",art:"chapterhouse",loc:"Капитулярный зал аббатства",npc:"Аббат Одон",
+      body:"Мастер Ренье разворачивает на столе капитула чертёж, начерченный не пером писца, а угольным стержнем — размашисто, почти дерзко: колесо новой конструкции, что ставится не под струёй ручья, как старое, а под падающей сверху водой, из плотины. «Оно перемелет втрое больше зерна тем же потоком, отец аббат. Но плотина — это труд, это лес, и это ждать целое лето, пока вода наполнит запруду».\n\nАббат Одон смотрит не на чертёж, а на тебя — «Ты видел, как течёт зерно и как течёт вода в лечебных водах. Что скажешь?»",
+      reality:"Верхнебойное (наливное) водяное колесо было известно ещё с античности и превосходило по мощности нижнебойное в разы, но требовало плотины и напора — technически более сложного и капиталоёмкого сооружения, поэтому распространялось в Европе неравномерно и медленно вплоть до высокого Средневековья.",
+      player:"Герой ускоряет местный переход к более совершенной, но и более рискованной технологии на десятилетия раньше, чем к ней пришла бы сама округа.",
+      next:"s21a_renier_ally",
+      choices:[
+        {text:"«Постройте так, как предлагает мастер Ренье — вода наверху даёт вчетверо больше силы, чем внизу, я видел это своими глазами.»",
+         lang:4, effects:{progress:2}, risk:2, effects2:{church:-1}, flags:["renier_trust"],
+         lead:"Аббат колеблется дольше обычного — но кивает. Ренье впервые за встречу смотрит на тебя не как на любопытного монаха, а как на союзника."},
+        {text:"«Отец аббат, наливное колесо — не ересь, а лишь то же чудо воды и жёрнова, поставленное иначе. Стоит попробовать во славу обители.»",
+         lang:2, effects:{progress:1,church:1}, risk:1, flags:["renier_trust"],
+         lead:"Довод о «том же чуде иначе поставленном» убеждает аббата легче, чем голая похвала новизне. Ренье получает разрешение — и запоминает, чьё слово его дало."},
+        {text:"«Решение не по моей части, отец аббат — доверьтесь мастеру, раз вы его наняли.»",
+         effects:{church:1}, risk:-1, effects2:{progress:-1},
+         lead:"Аббат соглашается с осторожным вариантом — старое колесо чинят, новое не строят. Ренье благодарит тебя за молчание почти без тепла в голосе: он ждал защитника, а получил стороннего наблюдателя."}
+      ]},
+
+    s21a_renier_ally:{chapter:4,chapterTitle:"Глава IV — Инфраструктура",title:"Разговор у чертежа",art:"river",loc:"Берег реки, ниже старой мельницы",npc:"Мастер Ренье",
+      body:"Ренье встречает тебя у воды сам, без посредников — редкость для мирского мастера в разговоре с монахом. «Ты единственный в этих стенах, кто спросил меня не «сколько это будет стоить», а «как это работает». Идём, покажу, где встанет плотина — и почему именно там, а не там, где угодно аббату.»",
+      reality:"Наёмные мастера-строители в монастырских проектах XII века нередко оставались фигурой без права голоса в решениях о месте и методе работ — итоговое слово почти всегда оставалось за заказчиком, вне зависимости от технической правоты подрядчика.",
+      player:"Впервые техническое суждение специалиста-мирянина получает в обители не формальное, а действительное доверие — благодаря заступничеству героя, а не по праву мастера.",
+      next:"s22_site_choice",
+      choices:[
+        {text:"Расспросить его о напоре воды и высоте плотины подробно — не для виду, а чтобы правда понимать расчёт.",
+         effects:{progress:1}, risk:0,
+         lead:"Ренье отвечает охотно и подробно — впервые за долгие месяцы работы у него есть слушатель, который понимает не половину, а почти всё."},
+        {text:"Спросить прямо, что ему нужно от тебя, а не от аббата.",
+         effects:{influence:1}, risk:0,
+         lead:"Ренье усмехается — прямой вопрос ему по нраву больше учтивости. «Мне нужен голос в капитуле, когда доски и брёвна начнут кончаться раньше срока.»"}
+      ]},
+
+    s21b_renier_wary:{chapter:4,chapterTitle:"Глава IV — Инфраструктура",title:"Разговор через посредника",art:"river",loc:"Берег реки, ниже старой мельницы",npc:"Мастер Ренье",
+      body:"Ренье кланяется учтиво и коротко — так, как кланяются человеку, чьё слово в капитуле уже стоило ему летнего разрешения на плотину. «Брат Лука. Аббат сказал, вы разбираетесь в течениях воды не хуже течений крови. Жаль, что это не помогло мне получить наливное колесо.»",
+      reality:"Отказ капитула от предложенного мастером метода нередко означал не техническое возражение, а простое нежелание рисковать трудом и лесом ради непроверенной в данной местности схемы.",
+      player:"Осторожность героя здесь стоит не жизни и не Церкви — а доверия человека, чьё ремесло он мог бы поддержать и не поддержал.",
+      next:"s22_site_choice",
+      choices:[
+        {text:"Честно признать: решение было осторожным, а не техническим возражением — и предложить помощь сейчас, с чиненой мельницей.",
+         effects:{prosperity:1}, risk:0, flags:["renier_uneasy"],
+         lead:"Ренье слушает без улыбки, но кивает — признание честнее, чем оправдание. Работать вместе он готов, довериться — пока нет."},
+        {text:"Ничего не объяснять и просто перейти к делу — месту будущей стройки.",
+         effects:{}, risk:0, flags:["renier_uneasy"],
+         lead:"Ренье не настаивает на разговоре, которого ты избегаешь. Дело продолжается — но между вами с самого начала лежит вежливая дистанция."}
+      ]},
+
+    s22_site_choice:{chapter:4,chapterTitle:"Глава IV — Инфраструктура",title:"Где встанет плотина",art:"field",loc:"Берег реки у общинного поля",npc:"Староста Симон",
+      body:"Лучшее место для запруды — там, где река делает изгиб у самой границы общинного поля, того самого, что Симон третий год бережёт долей вместо долга. «Поставите плотину здесь — часть поля затопит по весне. Есть и другой берег, круче и дальше, но там придётся валить лес и таскать камень вдвое больше.»",
+      reality:"Строительство мельничных плотин в средневековой деревне регулярно становилось источником земельных споров: подтопление общинных или частных полей затрагивало интересы крестьян напрямую и порой годами оставалось предметом тяжб.",
+      player:"Инфраструктурный проект героя впервые сталкивается не с сопротивлением Церкви, а с ценой, которую платит своей землёй конкретный человек, уже однажды пощажённый им же.",
+      next:"s23_labor",
+      choices:[
+        {text:"Выбрать ближний берег — поле Симона немного пострадает, но обитель сбережёт месяцы труда.",
+         effects:{progress:1}, risk:0, effects2:{prosperity:-1}, flags:["site_common"],
+         lead:"Симон не спорит — уговор есть уговор, а обитель однажды простила ему долг. Но кивок его тяжелее, чем прежде."},
+        {text:"Выбрать дальний берег — дольше и труднее, зато ничья земля не пострадает.",
+         effects:{prosperity:1}, risk:0, effects2:{progress:-1}, flags:["site_far"],
+         lead:"Симон впервые за долгое время смотрит на тебя без настороженности. Ренье вздыхает — лишний лес и лишние недели работы теперь на его плечах."}
+      ]},
+
+    s23_labor:{chapter:4,chapterTitle:"Глава IV — Инфраструктура",title:"Рабочие руки",art:"village",loc:"Деревня у дороги, начало страды",npc:"Староста Симон",
+      body:"Плотине нужны десятки рук — валить лес, таскать камень, вязать сваи, — а у деревни разгар полевых работ, и каждая пара рук на счету на своей же земле. Келарь предлагает старый способ — барщину, обязательный труд в счёт повинности. Симон предлагает иначе — плату зерном или долей будущего помола, кто сам согласится.",
+      reality:"Крупные монастырские стройки XII века нередко совмещали оба способа набора рабочей силы — барщину зависимых крестьян и наёмный труд за плату, в разной пропорции в зависимости от щедрости и расчётливости обители.",
+      player:"Выбор между принуждением и договором здесь — прямое продолжение системы «доля вместо долга», введённой героем в предыдущей главе, а не новая, изолированная идея.",
+      next:"s24_crisis_flood",
+      choices:[
+        {text:"«Платить зерном или долей помола — кто придёт сам, тот и станет строить.»",
+         requiresFlag:"credit_shares",
+         lang:3, effects:{prosperity:1,influence:1}, risk:0, flags:["labor_paid"],
+         lead:"Люди приходят охотнее, чем ожидал даже Симон — доля в новой мельнице значит для них больше, чем разовая плата когда-либо значила."},
+        {text:"«Заплатим тем, кто придёт сам — из амбарных запасов, что мы теперь и так считаем по чести.»",
+         lang:4, effects:{prosperity:1}, risk:1, effects2:{church:-1}, flags:["labor_paid"],
+         lead:"Келарь ворчит о лишнем расходе, но книга Томы выдерживает и эту статью. Работа начинается без ропота среди тех, кто пришёл строить."},
+        {text:"Оставить решение келарю — барщина проще и обители ничего не стоит.",
+         effects:{church:1}, risk:-1, effects2:{prosperity:-1}, flags:["labor_corvee"],
+         lead:"Стройка начинается по старому счёту повинностей. Работа идёт — но без того рвения, что бывает у людей, строящих для себя, а не по обязанности."}
+      ]},
+
+    s24_crisis_flood:{chapter:4,chapterTitle:"Глава IV — Инфраструктура · Кризис",title:"Паводок",art:"river",loc:"Стройка на реке, после недели дождей",npc:"Мастер Ренье",
+      body:"Дожди, что должны были наполнить запруду постепенно, за одну ночь наполняют её до краёв — недостроенная плотина трещит под напором, и половина каркаса будущего колеса стоит в воде по пояс. Ренье кричит людям укреплять берег, но не знает, выдержит ли конструкция ещё одну такую ночь.",
+      reality:"Внезапные весенние и осенние паводки были одной из главных причин разрушения недостроенных или недавно возведённых плотин на протяжении всего Средневековья — расчёт прочности часто уступал место расчёту на удачу.",
+      player:"Первое настоящее испытание инфраструктурного проекта героя — стихия, против которой бесполезны ни язык веры, ни язык авторитета, только верный расчёт или его отсутствие.",
+      next:"s25_project_choice",
+      choices:[
+        {text:"«Отводной канал в сторону — сбросить лишний напор воды, пока плотину не разорвало!»",
+         lang:4, effects:{progress:1}, risk:2,
+         lead:"Идея сырая, но верная — люди роют канал в грязи и темноте, и вода, найдя новый путь, отступает от каркаса раньше, чем он не выдержал."},
+        {text:"Укрепить берег вместе со всеми — брёвнами, мешками земли, голыми руками, как учили испокон веку.",
+         effects:{prosperity:1}, risk:0,
+         lead:"Ночь проходит в грязи и холоде, но старый способ держит удар — плотина трещит, однако выстаивает до рассвета."},
+        {text:"Послать за людьми купца Обера — у него в городе есть лишние доски и лишние руки за плату.",
+         requiresFlag:"suspicion_guillaume2",
+         effects:{prosperity:1,influence:1,treasury:-2}, risk:1, effects2:{church:-1},
+         lead:"Обер присылает доски без единого попрёка — старая обида, похоже, стоит для него меньше, чем случай оказаться нужным обители, которую он же и порочил. Плата уходит из тех самых денег, что копились в закромах на именно такой случай."}
+      ]},
+
+    s25_project_choice:{chapter:4,chapterTitle:"Глава IV — Инфраструктура",title:"Что строить дальше",art:"river",loc:"Стройка на реке, дамба выстояла",npc:"Мастер Ренье",
+      body:"Плотина выстояла, колесо вот-вот встанет на место — и Ренье впервые спрашивает не «как», а «что дальше». Дерева и камня достаточно ещё на одно сооружение сверх мельницы: мост через реку, что избавит деревню от объезда в полдня, или водовод к лазарету, что даст Гийому чистую воду вместо колодезной.",
+      reality:"Единичные технические новшества в средневековой деревне редко оставались изолированными — успешная плотина или колесо нередко становились поводом для следующего, смежного по технике сооружения в той же местности.",
+      player:"Герой впервые выбирает не отдельное вмешательство, а то, каким системным следом его работа останется в общине после него.",
+      next:"s26_finale4",
+      choices:[
+        {text:"«Казна обители потянет и мост, и водовод разом — наймём городских каменщиков, чтобы успеть до зимы.»",
+         requiresTreasury:3,
+         lang:4, effects:{prosperity:1,influence:1,progress:1,treasury:-3}, risk:1, flags:["infra_bridge","infra_aqueduct"],
+         lead:"Ренье присвистывает, услышав, что казна готова платить чужим рукам, — за такие деньги встанут разом и мост, и водовод, прежде чем река встанет подо льдом. Он впервые называет тебя мастером не по случайности, а по праву."},
+        {text:"«Строим водовод к лазарету — чистая вода спасёт больше жизней, чем сбережёт времени любой мост.»",
+         requiresFlag:"hygiene",
+         lang:3, effects:{prosperity:2}, risk:0, flags:["infra_aqueduct"],
+         lead:"Гийом, узнав о решении, впервые за год не находится с колкостью — только кивает и уходит проверять, где рыть канаву к лазарету."},
+        {text:"«Строим мост — деревне и обители нужнее дорога, чем лишняя удобная стройка.»",
+         effects:{influence:2}, risk:0, flags:["infra_bridge"],
+         lead:"Симон впервые благодарит тебя без тени старого долга в голосе — мост через реку не про зерно, а про то, что деревня теперь не отрезана каждую распутицу."},
+        {text:"Остановиться на одной мельнице — не тратить лес и силы сверх нужного.",
+         effects:{church:1}, risk:-1, flags:["infra_mill"],
+         lead:"Ренье пожимает плечами — работа сделана и на этом. Мельница мелет исправно, но большего этот год общине не оставит."}
+      ]},
+
+    s26_finale4:{chapter:4,chapterTitle:"Конец Книги II",title:"Колесо на реке",art:"abbey",loc:null,npc:null,sliceEnd:true,
+      body:"Аббат Одон стоит с тобой на берегу и слушает, как новое колесо впервые проворачивается под тяжестью воды — звук, которого в этих местах не было ни при нём, ни при его предшественнике. «Ты пришёл сюда братом без имени. Теперь тебя слушают не только в лазарете и не только над амбарной книгой — тебя слушают в капитуле, отец советник.»\n\nНа этом заканчивается написанный отрезок Книги II — «Двор». Книга III — «Наследие» (Главы 5–6: Технологии, Наука) ещё не написана.",
+      reality:null, player:null,
+      next:null, choices:[]}
+  }
+};
+for(const [k,sc] of Object.entries(GAME.scenes)) sc.id = k;
+
+/* ============ СЛУЧАЙНЫЕ СОБЫТИЯ ============ */
+/* Между обычными сценами, с шансом RANDOM_EVENT_CHANCE, может вклиниться одно из этих —
+   не двигает основной сюжет, только даёт лёгкий эффект/флаг и текстуру мира. Каждое — один раз за игру. */
+const RANDOM_EVENT_CHANCE = 0.35;
+const RANDOM_EVENTS = [
+  {id:"ev_royal_tax",chapters:[1,2],chapterTitle:"Весть из внешнего мира",origin:"Королевский тракт · Парижское превотство",title:"Королевский прево",art:"village",loc:"Северные ворота аббатства",npc:"Прево Робер и королевские сержанты",
+    body:"Ворота Сен-Дени блокированы отрядом королевских всадников под знаменем с золотыми лилиями. Прево Робер, не спешиваясь, зачитывает указ короля Филиппа II: на войну во Фландрии Парижу требуется серебро и фураж. Аббатство обязано сдать двадцать мешков отборного зерна и пятьдесят ливров, либо сержанты вскроют житницы силой.\n\n— Церковь молится, но воюет король! — холодно заявляет прево. Брат-келарь в панике крестится, не смея перечить королевской печати.",
+    reality:"Король Филипп II Август проводил жесткую политику централизации Франции, регулярно облагая монастыри и города чрезвычайными военными поборами вопреки старым папским привилегиям.",
+    player:"Фискальные дилеммы эпохи: отдать последнее зерно и обречь людей на голод, защищаться уставом или предложить королевской казне новый метод учёта.",
+    choices:[
+      {text:"Отдать часть зерна из общинного запаса, сохранив монастырское серебро и мир с короной.",
+       effects:{prosperity:-1,church:1}, risk:0,
+       lead:"Обоз прево увозит зерно. На монастырских столах станет беднее, но королевский гнев миновал стены Сен-Дени."},
+      {text:"Предложить прево упорядочить взимание ярмарочных пошлин Сен-Дени по единой счётной ведомости в пользу короны.",
+       requiresProgress:2,
+       effects:{progress:1,prosperity:1}, risk:1, flag:"tax_ledger_deal",
+       lead:"Прево изумлён точностью твоей системы учёта. Аббатство получает долю пошлин и охранную грамоту короля, но парижские фискалы начинают присматриваться к тебе."},
+      {text:"Вынести святые мощи и зачитать старую хартию Людовика VI о фискальном иммунитете обители.",
+       effects:{church:1,influence:1}, risk:2, flag:"defied_bailiff",
+       lead:"Прево отступает перед гневом верующих, но обещает доложить архиепископу и королевскому совету. Внимание к Сен-Дени накалено."}
+    ]},
+
+  {id:"ev_merchant_caravan",chapters:[1,2],chapterTitle:"Весть из внешнего мира",origin:"Шампанские ярмарки · Купеческий обоз",title:"Купцы из Фландрии",art:"field",loc:"Постоялый двор у внешних стен",npc:"Купец Годфри из Гента",
+    body:"Обоз фламандских купцов застрял на речной переправе и остановился на отдых у монастырских стен. Их тюки пахнут солью, корицей и чужими морями. За ужином седой купец Годфри достает из просмоленного ларца то, о чём не говорят при канониках: мешки с семенами кормовой люцерны и клевера с юга, а также переписанный на пергамент арабский свиток с чертежами зубчатых колес и водоподъемных механизмов.\n\n— В Брюгге за это платят золотом, монах. Для твоих полей или будущей мельницы это ценнее десяти молитв. Вопрос лишь в цене.",
+    reality:"Купеческие караваны через ярмарки Шампани были главными артериями технологического трансфера XII века: именно через них в Европу проникали арабские переводы античных трактатов, механика и кормовые травы севооборота.",
+    player:"Выбор между безопасным благочестием и практическим скачком знаний, который всегда нёс риск обвинения в ереси.",
+    choices:[
+      {text:"Выменять мешки с семенами люцерны и клевера за монастырское вино и сукно.",
+       effects:{prosperity:1,progress:1}, risk:0, flag:"clover_seeds",
+       lead:"Посев люцерны обогатит истощённую землю азотом и даст обильный корм скоту. Мягкое и безопасное новшество."},
+      {text:"Тайно выкупить арабский свиток с чертежами приводов и расчётом водяного напора.",
+       effects:{progress:2}, risk:2, flag:"arabic_treatise",
+       lead:"Свиток полон гениальных схем приводов. Твои инженерные замыслы взлетают на десятилетия вперед, но чужая вязь в твоей келье — опаснейшая улика."},
+      {text:"Купить только разрешенную соль и ладан, благословив караван в дорогу.",
+       effects:{church:1,prosperity:1}, risk:-1,
+       lead:"Сделка чиста перед Богом и людьми. Купцы благодарят за благословение, а обитель избегает лишних разговоров."}
+    ]},
+
+  {id:"ev_roman_inquisitor",chapters:[1,2],chapterTitle:"Весть из внешнего мира",origin:"Папская курия · Римский эмиссар",title:"Посланник из Рима",art:"chapel",loc:"Монастырская галерея, вечер",npc:"Брат Раймунд из Рима",
+    body:"В Сен-Дени прибыл брат Раймунд — эмиссар папской курии, направленный инспектировать северные епархии. Он немногословен, сухопар и не выпускает из рук молитвенника. Весь день он провел в лазарете и скриптории, наблюдая за твоей работой и выпытывая у брата Гийома, почему смертность от горячки в обители упала втрое и откуда взялись новые чертежи.\n\nВ сумерках он настигает тебя у клуатра:\n— Господь исцеляет по вере, брат Лука. Но я вижу здесь не столько молитву, сколько человеческую гордыню и тайный умысел. Что движет твоей рукой?",
+    reality:"Папские легаты и представители строгих орденов тщательно отслеживали любые признаки натурфилософии и отклонений от канонического догмата о божественном предопределении болезней.",
+    player:"Прямое столкновение с догматической цензурой эпохи. Защитишься ли ты схоластикой, спрячешься или положишься на союзников?",
+    choices:[
+      {text:"Вступить в богословский диспут: цитировать Августина о том, что познание законов творения прославляет Творца.",
+       requiresProgress:2,
+       effects:{church:1,influence:1}, risk:-1, flag:"scholastic_defense",
+       lead:"Твоя безупречная латынь и цитаты Отцов Церкви обезоруживают римлянина. Он видит перед собой не еретика, а глубокого богослова."},
+      {text:"Пока Раймунд занят на службе, тайно отправить Тому спрятать все записи и склянки в подпол лапидария.",
+       effects:{progress:0}, risk:-2, flag:"hidden_archive",
+       lead:"Тома безупречно прячет рукописи. Раймунд осматривает лазарет и скрипторий, не найдя ничего, кроме псалтири и простого мыла."},
+      {text:"Смиренно опустить глаза и позволить брату Гийому говорить за монастырь.",
+       effects:{church:1}, risk:0, isGuillaumeDependent:true,
+       lead:"Гийом берет слово. То, что он скажет римскому гостю, решит твою участь."}
+    ]},
+
+  {id:"re_night_bell",chapters:[1,2,3],chapterTitle:"Случай в пути",title:"Ночной колокол",art:"cell",loc:"Дормиторий, глубокая ночь",npc:null,
+    body:"Пономарь путает часы и бьёт в колокол на два часа раньше повечерия. Половина братии, не проснувшись толком, бредёт в темноте на службу, которой ещё не время. Ты — один из немногих, кто уже не спит.",
+    reality:null, player:null,
+    choices:[
+      {text:"Тихо воспользоваться лишним часом и записать то, на что обычно не хватает дня.",
+       effects:{progress:1}, risk:0,
+       lead:"Час тишины стоит больше, чем час сна. К рассвету на пергаменте — то, что иначе легло бы неделей позже."},
+      {text:"Помочь пономарю быстрее развести всех по местам, пока не начался ропот.",
+       effects:{church:1}, risk:0,
+       lead:"Братия успевает опомниться раньше, чем недовольство превращается в разговоры за завтраком."},
+      {text:"Снова лечь — ошибка пономаря не твоя забота.",
+       effects:{}, risk:0,
+       lead:"Ты спишь дальше. Наутро об этом часе не вспомнит никто, кроме тех, кто его потерял."}
+    ]},
+
+  {id:"re_pilgrim",chapters:[1,2],chapterTitle:"Случай в пути",title:"Хромой паломник",art:"village",loc:"Ворота аббатства",npc:"Незнакомый паломник",
+    body:"У ворот просит ночлега паломник с гноящейся раной на голени — идёт из Компостелы, рана открылась в дороге и не заживает третью неделю. Привратник хочет просто дать ему хлеба и отправить дальше, до соседнего прихода.",
+    reality:"Паломники, шедшие по большим путям к святым местам, нередко становились переносчиками раневых инфекций между приходами, не имевшими между собой почти никакой медицинской связи.",
+    player:"Простая чистая перевязка меняет судьбу одного конкретного путника, о котором иначе никто бы и не вспомнил.",
+    choices:[
+      {text:"Осмотреть рану самому — промыть и перевязать чисто, прежде чем отправлять его дальше.",
+       lang:3, effects:{prosperity:1}, risk:0,
+       lead:"Паломник смотрит на чистую повязку с недоверием — но уходит увереннее, чем пришёл."},
+      {text:"Отправить его к брату Гийому — как положено по уставу.",
+       effects:{church:1}, risk:0,
+       lead:"Гийом делает то, что умеет — кровопускание и молитву. Паломник уходит таким же хромым, каким пришёл."},
+      {text:"Не вмешиваться — у ворот всегда кто-то просит.",
+       effects:{}, risk:-1,
+       lead:"Паломник получает хлеб и уходит своей дорогой. Ты никогда не узнаешь, дошёл ли он."}
+    ]},
+
+  {id:"re_mice",chapters:[2],chapterTitle:"Случай в пути",title:"Мыши в закромах",art:"hall",loc:"Монастырский амбар, раннее утро",npc:"Брат-келарь",
+    body:"Келарь находит прогрызенный мешок и половину зимнего гороха, превращённого в труху и мышиный помёт. Он винит нечистого — так проще, чем признать, что мешки стояли прямо на земляном полу.",
+    reality:null, player:null,
+    choices:[
+      {text:"Показать, что мешки нужно держать на настиле, поднятыми от земли и стен.",
+       lang:3, effects:{prosperity:1}, risk:0,
+       lead:"Келарь ворчит, но переставляет мешки. К следующей проверке погрызенных находится вдвое меньше."},
+      {text:"Предложить завести амбарного кота — решение простое и понятное без объяснений.",
+       effects:{prosperity:1,church:1}, risk:0,
+       lead:"Келарь охотно соглашается — кот звучит куда безопаснее, чем советы про настилы. Мыши всё равно поредеют."},
+      {text:"Оставить как есть — это забота келаря, не твоя.",
+       effects:{}, risk:0,
+       lead:"Келарь остаётся один на один со своими мышами и своим убеждением про нечистого."}
+    ]},
+
+  {id:"re_found_coin",chapters:[3],chapterTitle:"Случай в пути",title:"Забытая монета",art:"scriptorium",loc:"Скрипторий, среди старых свитков",npc:"Послушник Тома",
+    body:"Разбирая старые грамоты для новой книги счёта, Тома находит между страниц монету — судя по виду, отложенную и забытую ещё прежним келарем, задолго до тебя. Никто не заметит, впиши он её в приход или промолчи.",
+    reality:"Утаённые или забытые суммы в монастырском хозяйстве почти никогда не всплывали в записях — учёт был слишком разрознен, чтобы такую пропажу вообще можно было заметить.",
+    player:"Единая книга счёта впервые делает возможным то, чего раньше просто не могло случиться — находку, которую есть куда вписать.",
+    choices:[
+      {text:"Вписать монету в книгу как найденную — пусть счёт будет честным до последнего денье.",
+       effects:{church:1,progress:1}, risk:0,
+       lead:"Тома вписывает находку аккуратной строкой. Из таких мелочей и растёт доверие к твоей книге."},
+      {text:"Сказать Томе оставить это без записи — один денье погоды не делает.",
+       effects:{}, risk:1, effects2:{church:-1},
+       lead:"Тома пожимает плечами и молчит. Книга остаётся точной почти во всём — кроме одной строки, которую вы оба знаете."}
+    ]},
+
+  {id:"re_storm",chapters:[1,2,3],chapterTitle:"Случай в пути",title:"Ночная буря",art:"infirmary",loc:"Двор аббатства, ночь",npc:null,
+    body:"Ветер срывает часть кровли над лазаретом, и к утру солома с дождевой водой лежат вперемешку на полу между тюфяками больных. Крышу нужно чинить раньше, чем начнётся следующий дождь.",
+    reality:null, player:null,
+    choices:[
+      {text:"Организовать срочный ремонт силами братии, отложив прочие дела на день.",
+       effects:{prosperity:1}, risk:0,
+       lead:"Крыша латается за день общими руками. Дела, отложенные на сегодня, подождут — сухой лазарет важнее."},
+      {text:"Поручить ремонт келарю и заняться своими делами.",
+       effects:{}, risk:0,
+       lead:"Крышу чинят, но на пару дней позже — почти незаметная, но настоящая отсрочка."}
+    ]},
+
+  {id:"re_rival_abbey_rumor",chapters:[2,3],chapterTitle:"Случай в пути",title:"Весть из соседнего аббатства",art:"chapel",loc:"Трапезная, вечер",npc:"Брат Гийом",
+    body:"Заезжий монах за ужином рассказывает: в аббатстве в двух днях пути брата обвинили в сговоре с нечистым — за то, что тот слишком точно предсказывал погоду по приметам. Его увезли на дознание неделю назад, и с тех пор о нём ничего не слышно.\n\n— Странное нынче время, брат Лука, — говорит Гийом, не глядя в твою сторону.",
+    reality:"Обвинения в колдовстве на почве необычно точных практических познаний были в XII веке ещё редкостью на фоне будущих веков охоты на ведьм, но уже случались — и разносились между соседними обителями быстро.",
+    player:"Первое напоминание игроку, что риск героя — часть общей истории эпохи, а не только личная неосторожность.",
+    choices:[
+      {text:"Ничего не говорить — молчание безопаснее любого слова за этим столом.",
+       effects:{}, risk:-1,
+       lead:"Ужин заканчивается в тишине. Никто не произносит вслух то, о чём подумал каждый."},
+      {text:"Спросить Гийома напрямую, что он об этом думает.",
+       effects:{church:1}, risk:1,
+       lead:"Гийом отвечает уклончиво, но по глазам видно — он думает о тебе, а не о том далёком брате."}
+    ]},
+
+  {id:"re_toma_gift",chapters:[1,2],chapterTitle:"Случай в пути",title:"Подарок Томы",art:"scriptorium",loc:"Скрипторий",npc:"Послушник Тома",
+    body:"Тома вручает тебе, смущаясь, небольшую деревянную ложку своей резьбы — «чтобы было чем мешать твои снадобья, раз уж у тебя всегда что-то кипит или настаивается». Подарок простой и совсем не по уставу — личные вещи между братьями не приняты.",
+    reality:null, player:null,
+    choices:[
+      {text:"Принять с благодарностью, не делая из этого события.",
+       effects:{church:1}, risk:0,
+       lead:"Тома светлеет лицом и тут же меняет тему, будто смутившись собственной щедрости."},
+      {text:"Мягко отказаться — личные подарки могут быть замечены не в лучшем свете.",
+       effects:{}, risk:-1, effects2:{church:-1},
+       lead:"Тома кивает и прячет ложку обратно за пазуху. В его взгляде — понимание пополам с разочарованием."}
+    ]}
+];
+for(const ev of RANDOM_EVENTS){ ev.isRandomEvent = true; ev.next = "__pending__"; GAME.scenes[ev.id] = ev; }
+
+/* ============ ЗАГЛУШКИ АРТА (гравюра, до готового) ============ */
+const ART_BRIEF = {
+  abbey:{t:"Аббатство Сен-Дени",p:"Общий план монастыря на рассвете. Каменные стены, колокольня, одинокая фигура монаха в арке ворот. Туман у земли."},
+  village:{t:"Деревня",p:"Кривые крытые соломой хижины, грязь по колено. Женщина у ворот аббатства, руки сложены с мольбой. Низкое серое небо."},
+  well:{t:"Монастырский колодец",p:"Каменный сруб колодца во дворе. Мутная вода в ведре. Позади — выгребная канава, которой никто не замечает."},
+  field:{t:"Общинное поле",p:"Три полосы пашни, одна пустует. Крестьянин с мотыгой смотрит на монаха. Бескрайнее пустое небо."},
+  scriptorium:{t:"Скрипторий",p:"Наклонные пюпитры, юный монах при свече. Полки с кодексами уходят во тьму. Пылинки в косом луче."},
+  cell:{t:"Келья",p:"Тесная каменная келья: тюфяк, распятие, одна свеча. Два монаха сидят друг напротив друга в полумраке."},
+  hall:{t:"Амбар / зал",p:"Своды хранилища, мешки и закрома в полутьме. Монах и служка со свечой у входа."},
+  chapel:{t:"Часовня",p:"Полумрак, витраж, свечи у алтаря. Коленопреклонённая фигура со спины. Луч света сквозь пыль."},
+  infirmary:{t:"Лазарет",p:"Длинный зал, больные лежат вповалку на соломе. Монах-лекарь склонился над одним. Свеча, спёртый воздух."},
+  chapterhouse:{t:"Капитулярный зал",p:"Каменные своды, длинный стол, восковые таблички и пергамент. Аббат во главе, свет из узких окон."},
+  market:{t:"Рыночная площадь",p:"Прилавки у городских стен, мешки зерна и рулоны сукна. Торговец в толпе, указывающий рукой."},
+  river:{t:"Мельница на реке",p:"Берег реки, деревянный каркас плотины и колеса. Мастер в рабочей одежде среди брёвен и лесов. Вода, брызги, пасмурное небо."}
+};
+/* готовые изображения — по мере генерации остальных просто добавляй пары id:файл сюда */
+const ART_IMG = {
+  luke:"img/new_vers/art_luke.jpg",
+  abbey:"img/new_vers/art_abbey.jpg",
+  cell:"img/new_vers/art_cell.jpg",
+  scriptorium:"img/new_vers/art_scriptorium.jpg",
+  hall:"img/new_vers/art_hall.jpg",
+  infirmary:"img/new_vers/art_infirmary.jpg",
+  well:"img/new_vers/art_well.jpg",
+  village:"img/new_vers/art_village.jpg",
+  field:"img/new_vers/art_field.jpg",
+  chapel:"img/new_vers/art_chapel.jpg"
+};
+function artStub(id, opts){
+  opts = opts || {};
+  const b = ART_BRIEF[id] || {t:"Сцена", p:"Кадр не описан — добавь в ART_BRIEF."};
+  const cap = opts.noCap ? "" : `<div class="scenefig-cap"><span class="t">${opts.capTitle||b.t}</span><span class="tag">${opts.capTag||b.t}</span></div>`;
+  const fig = opts.noCaption ? "" : `<figcaption>${opts.caption||b.p}</figcaption>`;
+  const img = ART_IMG[id];
+  const pic = img
+    ? `<img class="scenefig-photo" src="${img}" alt="">`
+    : `<div class="scenefig-hatch"></div>`;
+  return `<figure class="scenefig">
+    <div class="scenefig-img${opts.short?" short":""}">
+      ${pic}
+      <div class="scenefig-grad"></div>
+      ${cap}
+    </div>
+    ${fig}
+  </figure>`;
+}
+
+/* ============ СОСТОЯНИЕ ============ */
+let S = null, currentScene = null;
+
+function newState(){
+  return{
+    stats:{prosperity:GAME.stats.prosperity.start, progress:GAME.stats.progress.start,
+           church:GAME.stats.church.start, treasury:GAME.stats.treasury.start},
+    influence:0, risk:GAME.risk.start, riskCalmStreak:0, treasuryUnlocked:false,
+    flags:new Set(), firedEvents:new Set(), pendingNext:null,
+    log:[], month:2, year:1180, sceneId:"s1_fever_ward"
+  };
+}
+const MONTHS=["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+function dateStr(){return MONTHS[S.month]+" "+S.year;}
+
+const SAVE_KEY="architect_mvp_save_v1";
+function hasLS(){try{localStorage.setItem("__t","1");localStorage.removeItem("__t");return true;}catch(e){return false;}}
+const HAS_LS = hasLS();
+function save(){ if(!HAS_LS||!S) return;
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify({...S, flags:[...S.flags], firedEvents:[...S.firedEvents]})); }catch(e){} }
+function loadSave(){ if(!HAS_LS) return null;
+  try{ const raw = localStorage.getItem(SAVE_KEY); if(!raw) return null;
+    const d = JSON.parse(raw); d.flags = new Set(d.flags||[]); d.firedEvents = new Set(d.firedEvents||[]); d.riskCalmStreak = d.riskCalmStreak||0; return d;
+  }catch(e){ return null; } }
+function clearSave(){ if(HAS_LS) try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+
+function rankFor(inf){ let r=GAME.ranks[0]; for(const rk of GAME.ranks) if(inf>=rk.min) r=rk; return r; }
+function riskLevel(){ return GAME.riskLevels.find(l=>S.risk>=l.min && S.risk<=l.max) || GAME.riskLevels[GAME.riskLevels.length-1]; }
+
+/* ============ НАВИГАЦИЯ ЭКРАНОВ ============ */
+const $=id=>document.getElementById(id);
+function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); $(id).classList.add("active"); window.scrollTo(0,0);
+  $("nav").style.display = (id==="scr-game") ? "block" : "none"; }
+
+/* ============ ИКОНКИ (тонкий контур, в духе ver_claude/design.md §19) ============ */
+const ICONS = {
+  crown:'<path d="M3 17h18l-1.6-8.2-4.4 4-3-7.8-3 7.8-4.4-4L3 17Z"/><path d="M5 20h14"/>',
+  book:'<path d="M4 5a2 2 0 0 1 2-2h6v16H6a2 2 0 0 0-2 2V5Z"/><path d="M20 5a2 2 0 0 0-2-2h-6v16h6a2 2 0 0 1 2 2V5Z"/>',
+  users:'<circle cx="9" cy="8" r="3"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><path d="M16.5 6.2a3 3 0 0 1 0 5.8"/><path d="M21.5 20c0-2.7-1.9-4.9-4.5-5.7"/>',
+  church:'<path d="M12 3v3M9 6h6l4 5H5l4-5Z"/><path d="M5 11v10h14V11"/><path d="M10 21v-6h4v6"/>',
+  coin:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/>',
+  flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/>',
+  arrow:'<path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>',
+  lock:'<rect width="16" height="10" x="4" y="11" rx="2" ry="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  lens:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><circle cx="11" cy="11" r="3" stroke-dasharray="2 2"/>',
+  scroll:'<path d="M19 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11v16Z"/><path d="M19 4h2a1 1 0 0 1 1 1v12a3 3 0 0 1-3 3h-2"/><path d="M8 8h7M8 12h5"/>',
+  knife:'<path d="m18 2-6 6-9 9a2.8 2.8 0 0 0 4 4l9-9 6-6a1 1 0 0 0-1.4-1.4l-2.6 2.6"/><path d="m14 10-4-4"/>',
+  rosary:'<circle cx="12" cy="7" r="4"/><path d="M12 11v10M9 15h6"/><circle cx="6" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>',
+  sparkle:'<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z"/>'
+};
+function renderIcons(){
+  document.querySelectorAll("[data-ic]").forEach(el=>{
+    const d = ICONS[el.dataset.ic]; if(!d) return;
+    el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">${d}</svg>`;
+  });
+}
+
+/* ============ HUD ============ */
+let lastChoice = null, lastDeltas = null;
+const RISK_CALM_THRESHOLD = 3; // столько ходов подряд без нового риска гасят 1 очко риска
+const RISK_STATUS=[
+  {max:3, label:"Спокойно",       colorVar:"--sage",     fillVar:"--sage-dim",       badgeBg:"rgba(163,188,148,.12)", badgeBorder:"rgba(163,188,148,.25)"},
+  {max:7, label:"Наблюдение",     colorVar:"--gold",     fillVar:"--gold",           badgeBg:"rgba(183,154,86,.14)",  badgeBorder:"rgba(183,154,86,.3)"},
+  {max:11,label:"Подозрение",     colorVar:"--amber",    fillVar:"--amber-dim",      badgeBg:"rgba(217,179,104,.16)", badgeBorder:"rgba(217,179,104,.35)"},
+  {max:14,label:"Угроза ареста",  colorVar:"--burgundy", fillVar:"--burgundy-track", badgeBg:"rgba(192,115,109,.2)",  badgeBorder:"rgba(192,115,109,.4)"},
+  {max:15,label:"Арест неизбежен",colorVar:"--crimson",  fillVar:"--crimson",        badgeBg:"rgba(224,83,76,.25)",   badgeBorder:"rgba(224,83,76,.5)"}
+];
+const FLAG_RU={hygiene:"Гигиена",suspicion_guillaume:"Гийом насторожен",scribe:"Есть рукопись",
+  toma_trusted:"Тома — ученик",toma_sent:"Тома выходил в мир",threefield:"Трёхполье начато",
+  ledger:"Единый счёт",guillaume_ally:"Гийом — союзник",guillaume_uneasy:"Гийом молчит",
+  toma_scribe:"Тома — писец капитула",credit_shares:"Доля вместо долга",suspicion_guillaume2:"Слух на торгу",
+  renier_trust:"Ренье — союзник",renier_uneasy:"Ренье насторожен",site_common:"Плотина у поля Симона",site_far:"Плотина на дальнем берегу",
+  labor_paid:"Наём за долю",labor_corvee:"Стройка барщиной",infra_aqueduct:"Построен водовод",infra_bridge:"Построен мост",infra_mill:"Построена только мельница",
+  tax_ledger_deal:"Королевский договор",defied_bailiff:"Отказ королевскому прево",
+  clover_seeds:"Семена клевера и люцерны",arabic_treatise:"Восточный трактат механики",
+  scholastic_defense:"Защита Августина",hidden_archive:"Тайник в лапидарии"};
+const FLAG_DESC={
+  hygiene:"Кипячение воды и чистота инвентаря в лазарете.",
+  suspicion_guillaume:"Брат Гийом насторожен твоими суждениями о невидимой заразе.",
+  scribe:"Ты начал тайно записывать законы естествознания на латыни.",
+  toma_trusted:"Послушник Тома стал твоим преданным учеником и помощником.",
+  toma_sent:"Тома несёт твои практические наставления за пределы обители.",
+  threefield:"Внедрён трёхпольный севооборот: озимые, яровые и пар.",
+  ledger:"Введена система двойной бухгалтерии в монастырских амбарах.",
+  guillaume_ally:"Гийом признал пользу твоих методов и стал надёжным союзником.",
+  guillaume_uneasy:"Гийом замкнулся и с тревогой наблюдает за твоими шагами.",
+  toma_scribe:"Тома назначен писцом капитула и имеет доступ к секретным бумагам.",
+  credit_shares:"Монастырь финансирует посевы под долю урожая, а не кабалу.",
+  suspicion_guillaume2:"Слухи о необычных познаниях брата Луки дошли до городского рынка.",
+  renier_trust:"Мастер-плотник Ренье видит в тебе архитектора новой эпохи.",
+  renier_uneasy:"Мастер Ренье опасается твоих чертежей и работает с опаской.",
+  site_common:"Плотина заложена у общинного поля крестьян старосты Симона.",
+  site_far:"Плотина заложена на дальнем монастырском берегу реки.",
+  labor_paid:"Крестьяне работают на стройке плотины за справедливую долю зерна.",
+  labor_corvee:"Стройка ведётся принудительной монастырской барщиной.",
+  infra_aqueduct:"Каменный акведук доставляет чистую проточную воду прямо в обитель.",
+  infra_bridge:"Построен прочный мост, связавший торговые тракты.",
+  infra_mill:"Двухколёсная мельница перемалывает зерно для трёх приходов.",
+  tax_ledger_deal:"Упорядочивание королевских ярмарочных пошлин принесло аббатству защиту и доход.",
+  defied_bailiff:"Аббатство отстояло вольности перед королевскими сержантами, но навлекло взор Парижа.",
+  clover_seeds:"Посев кормовых бобовых культур восстанавливает плодородие истощенных монастырских полей.",
+  arabic_treatise:"Тайный перевод восточного трактата с чертежами приводов и расчетом водяных колес.",
+  scholastic_defense:"Искусство богословского диспута убедило папского эмиссара в твоем благочестии.",
+  hidden_archive:"Опасные натурфилософские рукописи и рецепты спрятаны в надежном тайнике под полом."
+};
+
+function renderHUD(){
+  $("hInf").textContent = S.influence;
+  $("vProsperity").textContent = S.stats.prosperity;
+  $("vProgress").textContent = S.stats.progress;
+
+  const st = RISK_STATUS.find(s=>S.risk<=s.max) || RISK_STATUS[RISK_STATUS.length-1];
+  const rStEl = $("riskStatus");
+  if(rStEl){
+    rStEl.textContent = st.label;
+    rStEl.style.color = `var(${st.colorVar})`;
+    rStEl.style.borderColor = st.badgeBorder;
+    rStEl.style.background = st.badgeBg;
+  }
+  const rValEl = $("riskVal");
+  if(rValEl){
+    rValEl.textContent = S.risk;
+    rValEl.style.color = `var(${st.colorVar})`;
+  }
+  const rFill = $("riskFill");
+  if(rFill){
+    rFill.style.width = Math.max(S.risk/GAME.risk.max*100,2)+"%";
+    rFill.style.background = `var(${st.fillVar})`;
+  }
+
+  const flagsRow = $("flagsRow");
+  if(flagsRow){
+    flagsRow.innerHTML = S.flags.size ? [...S.flags].map(f=>`<span class="flagchip">${FLAG_RU[f]||f}</span>`).join("") : "";
+  }
+
+  const riskHint = $("riskHint");
+  if(riskHint){ riskHint.style.display = (S.log.length === 0) ? "block" : "none"; }
+
+  renderIcons();
+}
+
+function triggerDeltas(deltas){
+  if(!deltas) return;
+  const map = {
+    prosperity: $("deltaProsperity"),
+    progress: $("deltaProgress"),
+    influence: $("deltaInfluence"),
+    _risk: $("deltaRisk")
+  };
+  for(const [k, el] of Object.entries(map)){
+    if(!el) continue;
+    const v = deltas[k];
+    if(v !== undefined && v !== 0){
+      const sign = v > 0 ? "+" : "−";
+      const isGood = (k==="_risk") ? v < 0 : v > 0;
+      el.textContent = `${sign}${Math.abs(v)}`;
+      el.className = `stat-delta show ${isGood ? "delta-up" : "delta-down"}`;
+      setTimeout(()=>{ if(el) el.className = "stat-delta"; }, 1400);
+    }
+  }
+  if(deltas._risk && deltas._risk > 0){
+    const gh = $("gameHead") || document.querySelector(".ghead");
+    if(gh){
+      gh.classList.remove("risk-alert-pulse");
+      void gh.offsetWidth;
+      gh.classList.add("risk-alert-pulse");
+      setTimeout(()=>{ if(gh) gh.classList.remove("risk-alert-pulse"); }, 1500);
+    }
+  }
+}
+
+/* ============ РЕНДЕР СЦЕНЫ ============ */
+function meetsReq(ch){
+  if(ch.requiresFlag && !S.flags.has(ch.requiresFlag)) return {ok:false,msg:"Требует иного пути"};
+  if(ch.requiresProgress && S.stats.progress < ch.requiresProgress) return {ok:false,msg:`Требует Прогресс ${ch.requiresProgress}`};
+  if(ch.requiresInfluence && S.influence < ch.requiresInfluence) return {ok:false,msg:`Требует Влияние ${ch.requiresInfluence}`};
+  if(ch.requiresTreasury && (!S.treasuryUnlocked || S.stats.treasury < ch.requiresTreasury)) return {ok:false,msg:"Требует средств из казны"};
+  return {ok:true};
+}
+const LANG_TAG = {1:"Видение",2:"Авторитет",3:"Опыт",4:"Прямота"};
+function choiceTag(ch){
+  if(ch.lang) return LANG_TAG[ch.lang];
+  if(ch.risk>0) return "Дерзость";
+  if(ch.risk<0) return "Осторожность";
+  return "Сдержанность";
+}
+function choiceTagClass(ch){
+  if(ch.lang===1) return "tag-vision";
+  if(ch.lang===2) return "tag-authority";
+  if(ch.lang===3) return "tag-experience";
+  if(ch.lang===4) return "tag-direct";
+  if(ch.risk>0) return "tag-daring";
+  if(ch.risk<0) return "tag-care";
+  return "tag-restraint";
+}
+
+function renderScene(id){
+  const sc = GAME.scenes[id];
+  currentScene = sc; S.sceneId = id;
+  closePanels(); renderHUD();
+
+  if(sc.sliceEnd) return showSliceEnd(sc);
+
+  if(sc.isRandomEvent){
+    $("hChapter").textContent = "Весть";
+    $("hChapter").style.borderColor = "rgba(183,154,86,.45)";
+    $("hChapter").style.background = "rgba(183,154,86,.18)";
+    if($("eventBanner")){
+      $("eventBanner").style.display = "inline-flex";
+      $("eventOrigin").textContent = sc.origin || "Внешний мир";
+    }
+  } else {
+    $("hChapter").textContent = (sc.chapterTitle || "").split(" — ")[0].trim();
+    $("hChapter").style.borderColor = "";
+    $("hChapter").style.background = "";
+    if($("eventBanner")) $("eventBanner").style.display = "none";
+  }
+
+  $("hYear").textContent = S.year;
+  $("hTurn").textContent = "Ход "+(S.log.length+1);
+
+  if(lastDeltas){
+    triggerDeltas(lastDeltas);
+    lastDeltas = null;
+  }
+
+  S.log.push({title:sc.title, chapter:sc.chapterTitle, date:dateStr(), isEvent:!!sc.isRandomEvent});
+
+  $("artBox").innerHTML = artStub(sc.art,{capTitle:sc.loc||sc.title,capTag:dateStr()});
+  $("sChapter").textContent = sc.chapterTitle;
+  $("sTitle").textContent = sc.title;
+  $("sMeta").innerHTML = (sc.loc?`<span>${sc.loc}</span>`:"") + (sc.npc?`<span> · </span><span class="npc">${sc.npc}</span>`:"");
+
+  const paras = sc.body.split("\n\n");
+  $("sDesc").innerHTML = paras.map(p=>{
+    if(p.trim().startsWith("—")){
+      return `<div class="quote"><span class="qn">${sc.npc||""}</span><p>${p.trim()}</p></div>`;
+    }
+    return `<p>${p}</p>`;
+  }).join("");
+
+  $("sChoiceLbl").textContent = "Твой шаг";
+
+  const box = $("sChoices");
+  box.style.pointerEvents = "";
+  box.innerHTML = "";
+  sc.choices.forEach((ch,i)=>{
+    const req = meetsReq(ch);
+    const tag = choiceTag(ch);
+    const tagCls = choiceTagClass(ch);
+    const b = document.createElement("button");
+    b.className = "choice" + (req.ok?"":" locked");
+    b.innerHTML = `<div class="cidx">
+      <div class="cidx-left">
+        <span class="cnum">${String(i+1).padStart(2,"0")}</span>
+        ${tag ? `<span class="ctag ${tagCls}">${tag}</span>` : ""}
+      </div>
+      <span class="cact">${req.ok
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS.arrow}</svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS.lock}</svg>`}</span>
+    </div>
+    <span class="ctext">${ch.text}</span>`
+    + (req.ok ? "" : `<div class="req"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS.lock}</svg><span>${req.msg}</span></div>`);
+    if(req.ok) b.onclick=()=>{
+      box.style.pointerEvents="none";
+      b.classList.add("sel");
+      if(navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
+      const gameSc = $("scr-game");
+      if(gameSc) gameSc.classList.add("dissolving-out");
+      setTimeout(()=>{
+        box.style.pointerEvents = "";
+        if(gameSc) gameSc.classList.remove("dissolving-out");
+        choose(ch);
+      }, 160);
+    };
+    box.appendChild(b);
+  });
+
+  show("scr-game"); save();
+}
+
+/* ============ ВЫБОР И ПОСЛЕДСТВИЯ ============ */
+function choose(ch){
+  if($("sChoices")) $("sChoices").style.pointerEvents = "";
+  lastChoice = ch;
+  if(S.log.length){ S.log[S.log.length-1].choice = ch.text; }
+  const deltas = {};
+  const applyStats = (obj)=>{ for(const [k,v] of Object.entries(obj||{})){
+    if(k==="influence"){ S.influence = Math.max(0,S.influence+v); deltas.influence=(deltas.influence||0)+v; continue; }
+    if(k==="treasury" && !S.treasuryUnlocked) continue;
+    if(S.stats[k]==null) continue;
+    S.stats[k] = Math.min(GAME.stats[k].max, Math.max(0, S.stats[k]+v));
+    deltas[k]=(deltas[k]||0)+v;
+  }};
+  applyStats(ch.effects); applyStats(ch.effects2);
+
+  let dynamicLead = ch.lead;
+  if(ch.isGuillaumeDependent){
+    if(S.flags.has("guillaume_ally")){
+      deltas.church = (deltas.church||0) + 1;
+      S.stats.church = Math.min(10, S.stats.church + 1);
+      S.risk = Math.max(0, S.risk - 1);
+      deltas._risk = (deltas._risk||0) - 1;
+      dynamicLead = "Брат Гийом встаёт плечом к плечу: «Брат Лука спас наш лазарет чистой водой и словом Божьим. Никакого греха в его руках нет». Римский эмиссар уважительно склоняет голову.";
+    } else if(S.flags.has("suspicion_guillaume")){
+      S.risk = Math.min(15, S.risk + 2);
+      deltas._risk = (deltas._risk||0) + 2;
+      dynamicLead = "Брат Гийом мнётся и отводит взгляд: «Он читает книги, которых я не знаю, и варит травы без молитвы...». В глазах папского эмиссара вспыхивает холодный огонь дознания.";
+    } else {
+      deltas.church = (deltas.church||0) + 1;
+      S.stats.church = Math.min(10, S.stats.church + 1);
+      dynamicLead = "Брат Гийом отвечает сдержанно и по уставу. Раймунд не находит повода для немедленного дознания.";
+    }
+  }
+
+  const riskBefore = S.risk;
+  let riskCalmed = false;
+  if(!ch.isGuillaumeDependent){
+    S.risk = Math.min(GAME.risk.max, Math.max(0, S.risk + (ch.risk||0)));
+    if((ch.risk||0) > 0){
+      S.riskCalmStreak = 0;
+    } else {
+      S.riskCalmStreak = (S.riskCalmStreak||0) + 1;
+      if(S.riskCalmStreak >= RISK_CALM_THRESHOLD && S.risk > 0){
+        S.risk = Math.max(0, S.risk - 1);
+        S.riskCalmStreak = 0;
+        riskCalmed = true;
+      }
+    }
+    if(S.risk !== riskBefore) deltas._risk = S.risk - riskBefore;
+  }
+
+  if(ch.flag) S.flags.add(ch.flag);
+  (ch.flags||[]).forEach(f=>S.flags.add(f));
+
+  const prevRank = rankFor(S.influence - (deltas.influence||0));
+  const newRank = rankFor(S.influence);
+  const rankedUp = newRank.title !== prevRank.title;
+  if(rankedUp && newRank.title==="Советник") S.treasuryUnlocked = true;
+
+  lastDeltas = deltas;
+  renderEcho(ch, deltas, rankedUp?newRank:null, riskCalmed, dynamicLead);
+}
+
+function renderEcho(ch, deltas, rankUp, riskCalmed, dynamicLead){
+  $("eKicker").textContent = "Последствие · "+currentScene.title;
+  $("eArtBox").innerHTML = artStub(currentScene.art,{short:true,noCap:true,noCaption:true});
+  $("eChoice").textContent = "«"+ch.text.replace(/^«|»$/g,"")+"»";
+  $("eLeadText").textContent = dynamicLead || ch.lead;
+
+  const eLang = $("eLang");
+  if(ch.lang){ eLang.style.display="inline-flex"; eLang.innerHTML = `<span>Язык решения:</span> <b>${GAME.langNames[ch.lang]}</b>`; }
+  else eLang.style.display="none";
+
+  const box = $("eDeltas"); box.innerHTML="";
+  const LABELS={prosperity:"Процветание",progress:"Прогресс",church:"Церковь",treasury:"Казна",influence:"Влияние",_risk:"Риск инквизиции"};
+  const CUR={prosperity:S.stats.prosperity,progress:S.stats.progress,church:S.stats.church,treasury:S.stats.treasury,influence:S.influence,_risk:S.risk};
+  for(const [k,v] of Object.entries(deltas)){
+    if(!v) continue;
+    const after = CUR[k], before = after - v;
+    const good = (k==="_risk") ? v<0 : v>0;
+    const d=document.createElement("div");
+    d.className="delta "+(good?"up":"down");
+    d.innerHTML = `<span class="dl"><span class="dot"></span>${LABELS[k]}</span>
+      <span class="dv"><span class="before">${before}</span>
+      <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS.arrow}</svg>
+      <span class="after">${after}</span><span class="chg">${v>0?"+":"−"}${Math.abs(v)}</span></span>`;
+    box.appendChild(d);
+  }
+
+  const rvp = $("eRvp");
+  if(currentScene.reality){ rvp.style.display="flex"; $("eReal").textContent=currentScene.reality; $("ePlayer").textContent=currentScene.player; }
+  else rvp.style.display="none";
+
+  const flagEl = $("eFlag");
+  const earnedFlags = [...(ch.flags||[]), ...(ch.flag ? [ch.flag] : [])];
+  if(earnedFlags.length){
+    flagEl.style.display="block";
+    flagEl.innerHTML = `<b>Путь отмечен</b>${earnedFlags.map(f=>FLAG_RU[f]||f).join(", ")}`;
+  } else flagEl.style.display="none";
+
+  const calmEl = $("eRiskCalm");
+  if(riskCalmed){
+    calmEl.style.display="block";
+    calmEl.innerHTML = `<b>Инквизиция теряет след</b>Несколько спокойных ходов подряд — и подозрение оседает: риск тихо снижается на 1.`;
+  } else calmEl.style.display="none";
+
+  const rankEl = $("eRank");
+  if(rankUp){ rankEl.style.display="block"; $("eRankTitle").textContent=rankUp.title; $("eRankDesc").textContent=rankUp.desc; }
+  else rankEl.style.display="none";
+
+  show("scr-echo"); save();
+}
+
+function advanceFromEcho(){
+  const echoScreen = $("scr-echo");
+  if(echoScreen) echoScreen.classList.add("dissolving-out");
+  setTimeout(()=>{
+    if(echoScreen) echoScreen.classList.remove("dissolving-out");
+    afterEcho();
+  }, 160);
+}
+
+function afterEcho(){
+  if($("sChoices")) $("sChoices").style.pointerEvents = "";
+  const end = checkFailEnding();
+  if(end) return showEnding(end);
+
+  const sc = currentScene;
+  let nextId = sc.next;
+  if(sc.isRandomEvent){
+    if(!S.pendingNext){
+      if(sc.chapters && sc.chapters.includes(2) && !sc.chapters.includes(1)){
+        nextId = "s8_grain";
+      } else if(sc.chapters && sc.chapters.includes(3) && !sc.chapters.includes(2)){
+        nextId = "s14a_guillaume_trust";
+      } else if(sc.chapters && sc.chapters.includes(4)){
+        nextId = "s20_mill_proposal";
+      } else {
+        nextId = "s3_question";
+      }
+    } else {
+      nextId = S.pendingNext;
+    }
+    S.pendingNext = null;
+  }
+  if(sc.id==="s8_grain") nextId = S.flags.has("toma_trusted") ? "s9a_toma_field" : "s9b_no_toma";
+  if(sc.id==="s13_ledger") nextId = S.flags.has("suspicion_guillaume") ? "s14b_guillaume_watch" : "s14a_guillaume_trust";
+  if(sc.id==="s14a_guillaume_trust" || sc.id==="s14b_guillaume_watch") nextId = S.flags.has("toma_trusted") ? "s15a_toma_scribe" : "s15b_toma_outside";
+  if(sc.id==="s20_mill_proposal") nextId = S.flags.has("renier_trust") ? "s21a_renier_ally" : "s21b_renier_wary";
+  if(!nextId){ return showSliceEnd(GAME.scenes.s26_finale4); }
+
+  if(!sc.isRandomEvent){
+    const ev = pickRandomEvent(GAME.scenes[nextId]);
+    if(ev){ S.pendingNext = nextId; S.firedEvents.add(ev.id); return renderScene(ev.id); }
+  }
+  renderScene(nextId);
+}
+
+function pickRandomEvent(nextSc){
+  if(!nextSc || nextSc.sliceEnd) return null;
+  if(nextSc.id === "s6_gate" || nextSc.id === "s12_finale" || nextSc.id === "s19_finale3" || nextSc.id === "s26_finale4") return null;
+
+  const chap = nextSc.chapter || (nextSc.id.startsWith("s7") || nextSc.id.startsWith("s8") || nextSc.id.startsWith("s9") || nextSc.id.startsWith("s10") || nextSc.id.startsWith("s11") ? 2 : 1);
+
+  const pool = RANDOM_EVENTS.filter(ev => !S.firedEvents.has(ev.id) && ev.chapters.includes(chap));
+  if(!pool.length) return null;
+
+  const eventsInChap = [...S.firedEvents].filter(id => {
+    const evObj = RANDOM_EVENTS.find(e => e.id === id);
+    return evObj && evObj.chapters.includes(chap);
+  }).length;
+
+  const isTriggerTurn = (chap === 1 && (currentScene.id === "s2_well" || currentScene.id === "s3_question"))
+                     || (chap === 2 && (currentScene.id === "s8_grain" || currentScene.id.startsWith("s9")))
+                     || (chap === 3 && (currentScene.id === "s13_ledger" || currentScene.id.startsWith("s14") || currentScene.id.startsWith("s15")))
+                     || (chap === 4 && (currentScene.id === "s22_site_choice" || currentScene.id === "s23_labor"));
+
+  if(eventsInChap === 0 && isTriggerTurn){
+    const ev = pool[Math.floor(Math.random() * pool.length)];
+    ev.chapterTitle = ev.chapterTitle || "Весть из внешнего мира";
+    return ev;
+  }
+
+  if(Math.random() > 0.25) return null;
+  const ev = pool[Math.floor(Math.random() * pool.length)];
+  ev.chapterTitle = ev.chapterTitle || "Весть из внешнего мира";
+  return ev;
+}
+
+function checkFailEnding(){
+  if(S.risk>=15) return "arrested";
+  if(S.stats.prosperity<=0) return "collapse";
+  if(S.stats.church<=0) return "excommunicated";
+  return null;
+}
+
+function showEnding(id){
+  const e = GAME.endings[id];
+  $("endBox").className = "ending " + (e.win?"win":"lose");
+  $("endArt").innerHTML = artStub(e.art,{noCap:true,short:true,noCaption:true});
+  $("endTitle").textContent = e.title;
+  $("endText").textContent = e.text;
+  $("endSummary").innerHTML = `${dateStr()} · Влияние ${S.influence} · ${rankFor(S.influence).title}<br>Процветание ${S.stats.prosperity}/10 · Церковь ${S.stats.church}/10`;
+  clearSave(); closePanels(); $("nav").style && ($("nav").style.display="none");
+  show("scr-end");
+}
+function showSliceEnd(sc){
+  $("endBox").className = "ending win";
+  $("endArt").innerHTML = artStub(sc.art,{noCap:true,short:true,noCaption:true});
+  $("endTitle").textContent = sc.title;
+  $("endText").textContent = sc.body;
+  $("endSummary").innerHTML = `${dateStr()} · Влияние ${S.influence} · ${rankFor(S.influence).title}<br>Процветание ${S.stats.prosperity}/10 · Прогресс ${S.stats.progress}/10 · Церковь ${S.stats.church}/10`;
+  clearSave(); closePanels(); $("nav").style && ($("nav").style.display="none");
+  show("scr-end");
+}
+
+/* ============ ПАНЕЛИ ============ */
+function openPanel(id){ closePanels(); $(id).classList.add("active"); document.body.classList.add("lock"); $("nav").style.display="none"; renderPanel(id); }
+function closePanels(){ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active")); document.body.classList.remove("lock");
+  if($("scr-game").classList.contains("active")) $("nav").style.display="block"; }
+function renderPanel(id){
+  if(id==="p-chron"){
+    const list = $("chronList");
+    if(!S.log.length){ list.innerHTML=`<div class="empty">Летопись пока пуста. Путь только начинается.</div>`; return; }
+
+    // Group entries by chapter
+    const groups = [];
+    let curChap = null, curItems = [];
+    for(const e of S.log){
+      const chap = e.chapter || "Хроника пути";
+      if(chap !== curChap){
+        if(curChap) groups.push({chapter:curChap, items:curItems});
+        curChap = chap;
+        curItems = [e];
+      } else {
+        curItems.push(e);
+      }
+    }
+    if(curChap) groups.push({chapter:curChap, items:curItems});
+
+    list.innerHTML = groups.map(g=>`
+      <div class="chronchapter-group">
+        <div class="chronchapter-header">
+          <span class="chronchapter-badge">${g.chapter}</span>
+          <span class="chronchapter-line"></span>
+        </div>
+        <div class="chronchapter-items">
+          ${g.items.map(e=>`
+            <div class="chronentry">
+              <div class="chron-meta">
+                <span class="chron-date">${e.date}</span>
+                ${e.isEvent ? `<span class="chron-event-tag">Весть</span>` : ""}
+              </div>
+              <div class="chron-title">${e.title}</div>
+              ${e.choice ? `<blockquote class="chron-choice">«${e.choice.replace(/^«|»$/g,"")}»</blockquote>` : `<div class="chron-nochoice">Событие эпохи</div>`}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `).join("");
+  }
+  if(id==="p-char"){
+    const rank = rankFor(S.influence);
+    const rankIdx = GAME.ranks.indexOf(rank);
+    const nextRank = GAME.ranks[rankIdx+1];
+    const infPct = nextRank ? Math.min(100, Math.max(0, (S.influence-rank.min)/(nextRank.min-rank.min)*100)) : 100;
+    const rSt = RISK_STATUS.find(s=>S.risk<=s.max) || RISK_STATUS[RISK_STATUS.length-1];
+
+    const flagsList = [...S.flags];
+
+    $("charBody").innerHTML = `
+      <div class="char-dossier">
+        <!-- Шапка персонажа -->
+        <div class="char-hero-card">
+          <div class="char-hero-top">
+            <div class="char-hero-portrait-frame" onclick="openPortraitDlg()" title="Нажми, чтобы рассмотреть портрет">
+              <img class="char-hero-avatar" src="${ART_IMG.luke}" alt="Брат Лука">
+              <div class="char-hero-zoom-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+              </div>
+            </div>
+            <div class="char-hero-info">
+              <div class="char-hero-name">Брат Лука</div>
+              <div class="char-hero-order">Орден св. Бенедикта · Сен-Мартен</div>
+              <div class="char-hero-rank-tag">${rank.title}</div>
+            </div>
+          </div>
+          <div class="char-hero-desc">«${rank.desc}»</div>
+
+          <!-- Влияние / Ранг -->
+          <div class="char-inf-section">
+            <div class="char-inf-row">
+              <span class="char-inf-label">Духовный вес и влияние</span>
+              <span class="char-inf-val">${S.influence} ${nextRank ? `<span class="inf-target">/ ${nextRank.min} (до «${nextRank.title}»)</span>` : `<span class="inf-target">· Высший сан</span>`}</span>
+            </div>
+            <div class="statbar-track">
+              <div class="statbar-fill" style="width:${Math.max(infPct, 3)}%;background:var(--gold)"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Обет и тайна пришельца -->
+        <div class="char-section-title">Обет и тайна пришельца</div>
+        <div class="char-origin-card">
+          <div class="char-origin-motto">«Lumen in tenebris sine flamma» — Свет во тьме без испепеляющего пламени</div>
+          <div class="char-origin-text">
+            В 1180 году в скриптории аббатства очнулся человек, чья память хранит законы физики, бактериологии и инженерной механики далёкого будущего.
+            Любое неосторожное открытие грозит обвинением в ереси и костром Святой Палаты. Твой путь — исцелять, возводить и просвещать, укрываясь покровом смиренного инока.
+          </div>
+          <div class="char-origin-tags">
+            <span class="char-origin-tag">Год прибытия: 1180</span>
+            <span class="char-origin-tag">Пикардия</span>
+            <span class="char-origin-tag">Тайные знания будущего</span>
+          </div>
+        </div>
+
+        <!-- Тайные реликвии и снаряжение -->
+        <div class="char-section-title">Тайные реликвии и инструменты</div>
+        <div class="char-relics-sub">Нажми на реликвию, чтобы изучить её свойство и мысли Луки</div>
+        <div class="char-relics-grid">
+          ${HERO_RELICS.map(r=>`
+            <div class="char-relic-card" onclick="openRelicDlg('${r.id}')" title="Изучить: ${r.name}">
+              <div class="char-relic-head">
+                <div class="char-relic-icon"><span class="ic" data-ic="${r.ic}"></span></div>
+                <div style="min-width:0;flex:1">
+                  <div class="char-relic-name">${r.name}</div>
+                  <div class="char-relic-sub">${r.sub}</div>
+                </div>
+              </div>
+              <div class="char-relic-hint">
+                <span class="ic" data-ic="sparkle"></span>
+                <span>Изучить реликвию</span>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+
+        <!-- Монастырские показатели -->
+        <div class="char-section-title">Состояние обители</div>
+        <div class="char-stats-card">
+          <div class="statrow">
+            <div class="statline">
+              <span class="sl-title"><span class="ic" data-ic="crown"></span>Процветание</span>
+              <span class="sl-val">${S.stats.prosperity} / 10</span>
+            </div>
+            <div class="statbar-track"><div class="statbar-fill" style="width:${S.stats.prosperity*10}%;background:var(--sage)"></div></div>
+          </div>
+
+          <div class="statrow">
+            <div class="statline">
+              <span class="sl-title"><span class="ic" data-ic="book"></span>Прогресс и знания</span>
+              <span class="sl-val">${S.stats.progress} / 10</span>
+            </div>
+            <div class="statbar-track"><div class="statbar-fill" style="width:${S.stats.progress*10}%;background:var(--gold)"></div></div>
+          </div>
+
+          <div class="statrow">
+            <div class="statline">
+              <span class="sl-title"><span class="ic" data-ic="users"></span>Отношение Церкви</span>
+              <span class="sl-val">${S.stats.church} / 10</span>
+            </div>
+            <div class="statbar-track"><div class="statbar-fill" style="width:${S.stats.church*10}%;background:var(--sage)"></div></div>
+          </div>
+
+          <div class="statrow">
+            <div class="statline">
+              <span class="sl-title"><span class="ic" data-ic="coin"></span>Казна</span>
+              <span class="sl-val">${S.treasuryUnlocked ? `${S.stats.treasury} / 10` : "Заблокирована"}</span>
+            </div>
+            <div class="statbar-track"><div class="statbar-fill" style="width:${S.treasuryUnlocked ? S.stats.treasury*10 : 0}%;background:var(--gold)"></div></div>
+            ${S.treasuryUnlocked ? "" : `<div class="statnote">Открывается с рангом «Советник»</div>`}
+          </div>
+        </div>
+
+        <!-- Взор Инквизиции -->
+        <div class="char-section-title">Взор Инквизиции</div>
+        <div class="char-risk-card" style="border-color:${rSt.badgeBorder}">
+          <div class="statline">
+            <span class="sl-title"><span class="ic" data-ic="flame"></span>Уровень угрозы</span>
+            <span class="sl-val" style="color:var(${rSt.colorVar})">${S.risk} / 15 — ${rSt.label}</span>
+          </div>
+          <div class="statbar-track"><div class="statbar-fill" style="width:${Math.max(S.risk/15*100, 2)}%;background:var(${rSt.fillVar})"></div></div>
+          <div class="char-risk-note">${S.risk >= 12 ? "Инквизиторские дознаватели уже близко. Любое неосторожное слово приведёт к костру." : "Пока подозрение не привлекло Святую Палату. Соблюдай осторожность."}</div>
+        </div>
+
+        <!-- След в истории (Флаги) -->
+        <div class="char-section-title">След в истории и открытые знания</div>
+        <div class="char-traits-box">
+          ${flagsList.length ? flagsList.map(f=>`
+            <div class="char-trait-item">
+              <div class="char-trait-name">${FLAG_RU[f]||f}</div>
+              <div class="char-trait-desc">${FLAG_DESC[f] || "Практика, оставившая след в хрониках обители."}</div>
+            </div>
+          `).join("") : `<div class="empty-traits">Твои решения пока не оставили глубокого следа.</div>`}
+        </div>
+      </div>
+    `;
+    renderIcons();
+  }
+}
+
+/* ============ РЕЛИКВИИ И ПОРТРЕТ ============ */
+const HERO_RELICS = [
+  {
+    id: "lens",
+    name: "Оптическая линза",
+    sub: "Венецианский кварц",
+    status: "Скрыта в складках пояса",
+    ic: "lens",
+    tag: "Тайный прибор",
+    desc: "Двояковыпуклая линза чистейшей шлифовки в чернёной медной оправе. Позволяет различать структуру волокон ткани, частицы порошков и мельчайшие споры плесени в чаше лазарета. Для братии обители — «стекло для ветхих хартий»; для Святой Палаты — опасное новшество, искажающее сотворённый Богом мир.",
+    quote: "«Если они увидят микромир в капле речной воды, они либо сожгут меня за чернокнижие, либо падут в благоговейном страхе. Знание требует терпения.»"
+  },
+  {
+    id: "notebook",
+    name: "Формуляр «Vade Mecum»",
+    sub: "Зашифрованный кодекс",
+    status: "В потайном ящике скриптория",
+    ic: "scroll",
+    tag: "Тайное знание",
+    desc: "Пергаментная тетрадь, исписанная мелким зеркальным шифром с арабскими цифрами. В ней зарисованы схемы десятиполья, распределение нагрузок стрельчатых арок собора, формулы карболовой кислоты и чертежи водяных мельниц с кривошипом.",
+    quote: "«Я не вправе погибнуть или сжечь эти записи, пока они не дадут плоды в камне, хлебе и сохранённых жизнях этой земли.»"
+  },
+  {
+    id: "lancet",
+    name: "Флорентийский ланцет",
+    sub: "Очищенное лезвие",
+    status: "В походной аптечке травника",
+    ic: "knife",
+    tag: "Хирургическая сталь",
+    desc: "Тонкое стальное лезвие безупречной ковки. Перед каждым иссечением нарывов или обработкой ран Лука тайно прокаливает металл на огне лампады и омывает кислым вином. Монахи говорят о его «святой руке», не подозревая, что огонь убивает невидимую гниль.",
+    quote: "«Огонь очищает рану вернее тысячи благовоний святому Себастьяну. Но пока эту истину приходится прятать за крестным знамением.»"
+  },
+  {
+    id: "rosary",
+    name: "Тиссовые чётки Сен-Дени",
+    sub: "Щит смирения",
+    status: "На поясе рясы",
+    ic: "rosary",
+    tag: "Монашеский обет",
+    desc: "Сто пятьдесят узловатых зёрен из тёмного тиса, освящённых при постриге в королевском аббатстве Сен-Дени. Твой главный защитный щит: пока пальцы мерно отсчитывают молитвы Pater Noster, пристальный взор приора Гийома или папского легата натыкается на стену праведного послушания.",
+    quote: "«Будь мудр, как змий, и кроток, как голубь. Молитва на устах спасает свободную мысль в голове.»"
+  }
+];
+
+function openRelicDlg(id){
+  const r = HERO_RELICS.find(x=>x.id===id);
+  if(!r) return;
+  if($("relicDlgIcon")) $("relicDlgIcon").innerHTML = ICONS[r.ic] ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">${ICONS[r.ic]}</svg>` : "";
+  $("relicDlgType").textContent = r.tag;
+  $("relicDlgTitle").textContent = r.name;
+  $("relicDlgSub").textContent = `${r.sub} · ${r.status}`;
+  $("relicDlgDesc").textContent = r.desc;
+  $("relicDlgQuote").textContent = r.quote;
+  $("relicDlg").classList.add("active");
+}
+function closeRelicDlg(){ $("relicDlg").classList.remove("active"); }
+
+function openPortraitDlg(){ $("portraitDlg").classList.add("active"); }
+function closePortraitDlg(){ $("portraitDlg").classList.remove("active"); }
+
+window.addEventListener("keydown", e => {
+  if(e.key === "Escape"){
+    closeRelicDlg();
+    closePortraitDlg();
+    closeDlg();
+  }
+});
+
+/* ============ ДИАЛОГ / СТАРТ ============ */
+function askNewGame(){
+  const saved = loadSave();
+  if(!saved) return showPrologue();
+  $("dlgTitle").textContent="Начать заново?";
+  $("dlgMsg").textContent="Сохранённый путь брата Луки будет утерян безвозвратно.";
+  $("dlgOk").onclick=()=>{ closeDlg(); showPrologue(); };
+  $("dlg").classList.add("active");
+}
+function closeDlg(){ $("dlg").classList.remove("active"); }
+function showPrologue(){
+  show("scr-prologue");
+}
+function startFromPrologue(){
+  newGame();
+}
+function newGame(){ S = newState(); renderScene(S.sceneId); }
+function continueGame(){
+  const saved = loadSave();
+  if(!saved) return showPrologue();
+  S = saved; renderScene(S.sceneId);
+}
+function restart(){ clearSave(); $("nav").style.display=""; show("scr-title"); checkContinue(); }
+function checkContinue(){
+  const saved = loadSave();
+  const btn = $("btnContinue");
+  if(saved){
+    btn.style.display = "block";
+    const rk = rankFor(saved.influence||0);
+    btn.textContent = `Продолжить: ${saved.year} г. · ${rk.title}`;
+  } else {
+    btn.style.display = "none";
+  }
+}
+checkContinue();
+</script>
 </body>
 </html>
