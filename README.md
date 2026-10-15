@@ -5,9 +5,11 @@
 ---
 
 ### 🎮 [ИГРАТЬ ОНЛАЙН В БРАУЗЕРЕ](https://melok90.github.io/architect-history/)
+### 📑 [СМОТРЕТЬ КЕЙС В ПОРТФОЛИО (CASE STUDY)](https://melok90.github.io/architect-history/case.html)
 
 **Прямая ссылка для запуска на смартфоне или компьютере:**  
-👉 **[https://melok90.github.io/architect-history/](https://melok90.github.io/architect-history/)**
+👉 **[https://melok90.github.io/architect-history/](https://melok90.github.io/architect-history/)**  
+👉 **Кейс:** **[https://melok90.github.io/architect-history/case.html](https://melok90.github.io/architect-history/case.html)**
 
 #### Быстрый запуск с телефона через камеру (QR-код):
 <p align="center">
