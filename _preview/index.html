@@ -616,12 +616,12 @@ h1.scenetitle{font-family:'Spectral',Georgia,serif;font-weight:400;font-size:24p
 nav{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:460px;z-index:40;
   background:var(--bg2);border-top:1px solid var(--border);border-left:1px solid var(--border);border-right:1px solid var(--border);
   padding-bottom:var(--safe-bottom)}
-nav .in{display:flex;align-items:center;gap:12px;padding:12px 20px 16px}
-nav button{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:12px 16px;
-  font-family:'IBM Plex Sans',sans-serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+nav .in{display:flex;align-items:center;gap:8px;padding:10px 12px 14px}
+nav button{flex:1;justify-content:center;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:10px 6px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--text-dim);background:transparent;border:1px solid var(--border);border-radius:4px;transition:background .17s,color .17s}
 nav button:active{background:var(--surface)}
-nav button .label{font-size:10px;letter-spacing:.14em;font-weight:400;text-transform:uppercase}
+nav button .label{font-size:10px;letter-spacing:.12em;font-weight:400;text-transform:uppercase}
 nav button.on{color:var(--gold)}
 
 /* ============ ПАНЕЛИ / РЕГИСТРЫ ============ */
@@ -727,6 +727,85 @@ nav button.on{color:var(--gold)}
 .char-trait-desc{font-family:'Spectral',Georgia,serif;font-size:13px;color:var(--text-dim);line-height:1.45}
 .empty-traits{color:var(--text-faint);font-style:italic;font-size:13px;padding:8px 0}
 
+/* ============ КОДЕКС И АТЛАС ============ */
+.codex-tabs{display:flex;gap:8px;margin-bottom:18px;background:rgba(0,0,0,.25);padding:4px;border-radius:8px;border:1px solid var(--border-soft)}
+.codex-tab{flex:1;min-height:38px;padding:8px 10px;border-radius:6px;border:1px solid transparent;background:transparent;
+  font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all .18s}
+.codex-tab:hover{color:var(--text)}
+.codex-tab.active{background:var(--surface-hi);border-color:var(--border-lit);color:var(--gold-bright);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+.codex-subdesc{font-size:12px;color:var(--text-faint);margin-top:-6px;margin-bottom:14px;line-height:1.5}
+
+.codex-atlas-grid{display:grid;grid-template-columns:repeat(2, 1fr);gap:11px}
+.codex-loc-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:8px;overflow:hidden;
+  display:flex;flex-direction:column;cursor:pointer;transition:border-color .2s,transform .15s,box-shadow .2s;text-align:left}
+.codex-loc-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.codex-loc-thumb{width:100%;height:102px;position:relative;background:#050806;overflow:hidden}
+.codex-loc-thumb img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(15%) contrast(105%);transition:transform .3s}
+.codex-loc-card:hover .codex-loc-thumb img{transform:scale(1.05)}
+.codex-loc-status{position:absolute;top:6px;right:6px;font-family:'IBM Plex Sans',sans-serif;font-size:8.5px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:4px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.codex-loc-status.unlocked{background:rgba(8,13,11,.82);color:var(--gold-bright);border:1px solid rgba(183,154,86,.4)}
+.codex-loc-status.locked{background:rgba(8,13,11,.85);color:var(--text-faint);border:1px solid rgba(255,255,255,.08)}
+.codex-loc-body{padding:9px 11px;display:flex;flex-direction:column;gap:3px;flex:1}
+.codex-loc-title{font-family:'Spectral',Georgia,serif;font-size:13.5px;font-weight:600;color:var(--text);line-height:1.25}
+.codex-loc-tag{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;letter-spacing:.06em;color:var(--text-faint);text-transform:uppercase}
+.codex-loc-hint{font-size:10.5px;color:var(--gold);margin-top:auto;padding-top:4px;display:inline-flex;align-items:center;gap:4px}
+.codex-loc-card.locked-card{opacity:.65;filter:grayscale(60%)}
+.codex-loc-card.locked-card:hover{opacity:1;filter:none}
+
+.codex-person-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:15px;
+  display:flex;flex-direction:column;gap:10px;margin-bottom:12px;transition:border-color .2s}
+.codex-person-card:hover{border-color:rgba(183,154,86,.3)}
+.codex-person-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.codex-person-meta{display:flex;flex-direction:column;gap:2px}
+.codex-person-name{font-family:'Spectral',Georgia,serif;font-size:17px;font-weight:600;color:var(--text);line-height:1.2}
+.codex-person-title{font-family:'IBM Plex Sans',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint)}
+.codex-person-badge{font-family:'IBM Plex Sans',sans-serif;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 8px;border-radius:4px;border:1px solid;white-space:nowrap}
+.codex-person-badge.ally{background:rgba(163,188,148,.12);border-color:rgba(163,188,148,.3);color:var(--sage)}
+.codex-person-badge.neutral{background:rgba(183,154,86,.12);border-color:rgba(183,154,86,.3);color:var(--gold-bright)}
+.codex-person-badge.threat{background:rgba(192,115,109,.15);border-color:rgba(192,115,109,.35);color:var(--burgundy)}
+.codex-person-desc{font-family:'Spectral',Georgia,serif;font-size:13.5px;color:var(--text-dim);line-height:1.55}
+.codex-person-quote{font-family:'Spectral',Georgia,serif;font-size:12.5px;font-style:italic;color:var(--gold);
+  background:rgba(183,154,86,.05);border-left:2px solid var(--gold);padding:7px 10px;border-radius:4px;line-height:1.45}
+
+.loc-dlg-box{max-width:390px;text-align:left;padding:18px 18px 20px}
+.loc-dlg-art{width:100%;height:180px;border-radius:8px;overflow:hidden;border:1px solid var(--border-lit);position:relative;margin-bottom:12px;background:#000}
+.loc-dlg-art img{width:100%;height:100%;object-fit:cover;display:block}
+.loc-dlg-title{font-family:'Spectral',Georgia,serif;font-size:19px;font-weight:600;color:var(--text);margin-bottom:2px}
+.loc-dlg-tag{font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.loc-dlg-desc{font-family:'Spectral',Georgia,serif;font-size:13.5px;color:var(--text-dim);line-height:1.5;margin-bottom:12px}
+.loc-dlg-history{background:rgba(183,154,86,.06);border:1px solid rgba(183,154,86,.22);border-radius:6px;padding:11px 13px;margin-bottom:16px}
+.loc-dlg-history-head{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.loc-dlg-history p{font-family:'Spectral',Georgia,serif;font-size:12.5px;color:var(--text);line-height:1.5}
+
+/* ============ ОБЕТЫ ЗОДЧЕГО (ДОСТИЖЕНИЯ — ЗОЛОТОЕ ТИСНЕНИЕ) ============ */
+.achievements-grid{display:grid;grid-template-columns:repeat(2, 1fr);gap:9px}
+.ach-card{background:linear-gradient(145deg, rgba(23,34,28,.85), rgba(12,18,15,.95));
+  border:1px solid rgba(183,154,86,.18);border-radius:8px;padding:11px 11px;
+  display:flex;flex-direction:column;gap:5px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;text-align:left}
+.ach-card:hover{border-color:rgba(183,154,86,.45);background:linear-gradient(145deg, rgba(28,42,35,.9), rgba(15,22,18,.98))}
+.ach-card.unlocked{border-color:rgba(211,188,126,.55);
+  box-shadow:0 0 16px rgba(183,154,86,.14), inset 0 1px 0 rgba(255,255,255,.08);
+  background:linear-gradient(145deg, rgba(32,48,39,.92), rgba(18,28,23,.96))}
+.ach-card.unlocked::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(211,188,126,.85), transparent)}
+.ach-head{display:flex;align-items:center;gap:8px}
+.ach-icon{width:28px;height:28px;border-radius:6px;flex:none;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);color:var(--text-faint)}
+.ach-icon svg{width:15px;height:15px}
+.ach-card.unlocked .ach-icon{background:linear-gradient(135deg, rgba(211,188,126,.22), rgba(183,154,86,.08));
+  border-color:rgba(211,188,126,.5);color:var(--gold-bright);box-shadow:0 2px 8px rgba(183,154,86,.25)}
+.ach-name{font-family:'Spectral',Georgia,serif;font-size:12.5px;font-weight:600;color:var(--text-faint);line-height:1.2}
+.ach-card.unlocked .ach-name{color:var(--gold-bright);text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.ach-sub{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;color:var(--text-faint);line-height:1.2}
+.ach-card.unlocked .ach-sub{color:var(--text-dim)}
+.ach-status{font-family:'IBM Plex Sans',sans-serif;font-size:8.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  margin-top:auto;padding-top:4px;display:flex;align-items:center;gap:4px;color:var(--text-faint)}
+.ach-card.unlocked .ach-status{color:var(--gold);font-weight:700}
+
 /* ============ ПОДТВЕРЖДЕНИЕ ============ */
 .dlgwrap{position:fixed;inset:0;z-index:60;background:rgba(8,13,11,.8);display:flex;align-items:center;
   justify-content:center;padding:28px;visibility:hidden;opacity:0;transition:opacity .2s,visibility .2s}
@@ -762,7 +841,7 @@ nav button.on{color:var(--gold)}
       <div class="yr">Аббатство Сен-Дени · 1180</div>
       <button class="btn" id="btnContinue" style="display:none;max-width:290px" onclick="continueGame()">Продолжить путь</button>
       <button class="btn" id="btnNew" onclick="askNewGame()">Начать путь</button>
-      <a href="../case.html" class="btn" style="background:transparent;border:1px solid rgba(183,154,86,.3);color:var(--gold-bright);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;margin-top:6px;max-width:290px">
+      <a href="case.html" class="btn" style="background:transparent;border:1px solid rgba(183,154,86,.3);color:var(--gold-bright);text-decoration:none;display:none;align-items:center;justify-content:center;gap:6px;font-size:12px;margin-top:6px;max-width:290px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         <span>Кейс в портфолио</span>
       </a>
@@ -959,10 +1038,21 @@ nav button.on{color:var(--gold)}
     <div id="charBody"></div>
   </div></div>
 
+  <div class="panel" id="p-codex"><div class="pin">
+    <div class="phead"><div><div class="plbl">Летописный свод</div><h2>Кодекс обители</h2></div>
+      <button class="pclose" onclick="closePanels()">✕</button></div>
+    <div class="codex-tabs">
+      <button class="codex-tab active" id="tabAtlas" onclick="switchCodexTab('atlas')">🗺 Атлас Сен-Дени</button>
+      <button class="codex-tab" id="tabPersons" onclick="switchCodexTab('persons')">👥 Персоналии</button>
+    </div>
+    <div id="codexBody"></div>
+  </div></div>
+
   <nav id="nav">
     <div class="in">
-      <button onclick="openPanel('p-chron')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V5a2 2 0 0 1 2-2h11l3 3v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="label">Летопись</span></button>
-      <button onclick="openPanel('p-char')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="label">Герой</span></button>
+      <button onclick="openPanel('p-chron')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V5a2 2 0 0 1 2-2h11l3 3v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="label">Летопись</span></button>
+      <button onclick="openPanel('p-char')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="label">Герой</span></button>
+      <button onclick="openPanel('p-codex')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10M6 14h7"/></svg><span class="label">Кодекс</span></button>
     </div>
   </nav>
 
@@ -1005,6 +1095,43 @@ nav button.on{color:var(--gold)}
       <div class="dm" style="font-size:12.5px;line-height:1.5;margin-bottom:16px;text-align:center">«Взор устремлён сквозь века. В руках — перо переписчика и травы лазарета, в разуме — чертежи грядущего мира.»</div>
       <div class="dbtns">
         <button class="ok" onclick="closePortraitDlg()">Вернуться</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно локации атласа -->
+  <div class="dlgwrap" id="locDlg" onclick="if(event.target===this)closeLocDlg()">
+    <div class="dlg loc-dlg-box">
+      <div class="loc-dlg-art" id="locDlgArt"></div>
+      <div class="loc-dlg-tag" id="locDlgTag">Обитель</div>
+      <div class="dt loc-dlg-title" id="locDlgTitle">Название</div>
+      <div class="loc-dlg-desc" id="locDlgDesc">Описание</div>
+      <div class="loc-dlg-history">
+        <div class="loc-dlg-history-head">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+          <span>XII век в реальности</span>
+        </div>
+        <p id="locDlgHistory"></p>
+      </div>
+      <div class="dbtns">
+        <button class="ok" onclick="closeLocDlg()">Вернуться к кодексу</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно достижения (Обет Зодчего) -->
+  <div class="dlgwrap" id="achDlg" onclick="if(event.target===this)closeAchDlg()">
+    <div class="dlg relic-dlg-box" style="border-color:rgba(211,188,126,.5)">
+      <div class="relic-dlg-top">
+        <div class="relic-dlg-icon" id="achDlgIcon" style="border-color:rgba(211,188,126,.5);color:var(--gold-bright)"></div>
+        <div class="relic-dlg-badge" id="achDlgBadge" style="color:var(--gold-bright)">Обет Зодчего</div>
+      </div>
+      <div class="dt" id="achDlgTitle">Название обета</div>
+      <div class="relic-dlg-sub" id="achDlgSub">Статус</div>
+      <div class="dm" id="achDlgDesc" style="text-align:left;font-size:13px;line-height:1.55;margin-bottom:12px">Условие</div>
+      <div class="relic-dlg-quote" id="achDlgQuote">«Цитата хроники»</div>
+      <div class="dbtns">
+        <button class="ok" onclick="closeAchDlg()">Скрыть свиток</button>
       </div>
     </div>
   </div>
@@ -1937,8 +2064,8 @@ function newState(){
   return{
     stats:{prosperity:GAME.stats.prosperity.start, progress:GAME.stats.progress.start,
            church:GAME.stats.church.start, treasury:GAME.stats.treasury.start},
-    influence:0, risk:GAME.risk.start, riskCalmStreak:0, treasuryUnlocked:false,
-    flags:new Set(), firedEvents:new Set(), pendingNext:null,
+    influence:0, risk:GAME.risk.start, riskCalmStreak:0, maxRiskEver:0, usedBloodletting:false, treasuryUnlocked:false,
+    flags:new Set(), firedEvents:new Set(), achievements:new Set(), unlockedLocations:new Set(["abbey","infirmary"]), pendingNext:null,
     log:[], month:2, year:1180, sceneId:"s1_fever_ward"
   };
 }
@@ -1949,10 +2076,15 @@ const SAVE_KEY="architect_mvp_save_v1";
 function hasLS(){try{localStorage.setItem("__t","1");localStorage.removeItem("__t");return true;}catch(e){return false;}}
 const HAS_LS = hasLS();
 function save(){ if(!HAS_LS||!S) return;
-  try{ localStorage.setItem(SAVE_KEY, JSON.stringify({...S, flags:[...S.flags], firedEvents:[...S.firedEvents]})); }catch(e){} }
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify({...S, flags:[...S.flags], firedEvents:[...S.firedEvents], achievements:[...(S.achievements||[])], unlockedLocations:[...(S.unlockedLocations||[])]})); }catch(e){} }
 function loadSave(){ if(!HAS_LS) return null;
   try{ const raw = localStorage.getItem(SAVE_KEY); if(!raw) return null;
-    const d = JSON.parse(raw); d.flags = new Set(d.flags||[]); d.firedEvents = new Set(d.firedEvents||[]); d.riskCalmStreak = d.riskCalmStreak||0; return d;
+    const d = JSON.parse(raw); d.flags = new Set(d.flags||[]); d.firedEvents = new Set(d.firedEvents||[]);
+    d.achievements = new Set(d.achievements||[]);
+    d.unlockedLocations = new Set(d.unlockedLocations||["abbey","infirmary"]);
+    d.maxRiskEver = d.maxRiskEver != null ? d.maxRiskEver : (d.risk || 0);
+    d.usedBloodletting = !!d.usedBloodletting;
+    d.riskCalmStreak = d.riskCalmStreak||0; return d;
   }catch(e){ return null; } }
 function clearSave(){ if(HAS_LS) try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
 
@@ -2165,6 +2297,11 @@ function choiceTagClass(ch){
 function renderScene(id){
   const sc = GAME.scenes[id];
   currentScene = sc; S.sceneId = id;
+  if(sc && sc.art){
+    if(!S.unlockedLocations) S.unlockedLocations = new Set();
+    S.unlockedLocations.add(sc.art);
+  }
+  checkAchievements(S);
   closePanels(); renderHUD();
 
   if(sc.sliceEnd) return showSliceEnd(sc);
@@ -2305,6 +2442,12 @@ function choose(ch){
   const newRank = rankFor(S.influence);
   const rankedUp = newRank.title !== prevRank.title;
   if(rankedUp && newRank.title==="Советник") S.treasuryUnlocked = true;
+
+  if(currentScene && currentScene.id === "s1_fever_ward" && ch.text && ch.text.includes("кровопусканием")){
+    S.usedBloodletting = true;
+  }
+  S.maxRiskEver = Math.max(S.maxRiskEver || 0, S.risk);
+  checkAchievements(S);
 
   lastDeltas = deltas;
   renderEcho(ch, deltas, rankedUp?newRank:null, riskCalmed, dynamicLead);
@@ -2513,6 +2656,8 @@ function renderPanel(id){
     `).join("");
   }
   if(id==="p-char"){
+    if(!S) S = newState();
+    checkAchievements(S);
     const rank = rankFor(S.influence);
     const rankIdx = GAME.ranks.indexOf(rank);
     const nextRank = GAME.ranks[rankIdx+1];
@@ -2588,6 +2733,29 @@ function renderPanel(id){
           `).join("")}
         </div>
 
+        <!-- Обеты Зодчего (Достижения) -->
+        <div class="char-section-title">Обеты Зодчего (Достижения)</div>
+        <div class="char-relics-sub">8 обетов прогрессора · Золотое тиснение Сен-Дени</div>
+        <div class="achievements-grid">
+          ${ACHIEVEMENTS.map(a=>{
+            const isDone = S.achievements && S.achievements.has(a.id);
+            return `
+              <div class="ach-card ${isDone?'unlocked':'locked'}" onclick="openAchDlg('${a.id}')" title="${a.title}">
+                <div class="ach-head">
+                  <div class="ach-icon"><span class="ic" data-ic="${a.ic}"></span></div>
+                  <div style="min-width:0;flex:1">
+                    <div class="ach-name">${a.title}</div>
+                    <div class="ach-sub">${a.sub}</div>
+                  </div>
+                </div>
+                <div class="ach-status">
+                  ${isDone ? `<span class="ic" data-ic="sparkle"></span> Свершено` : `<span class="ic" data-ic="lock"></span> Ожидает часа`}
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+
         <!-- Монастырские показатели -->
         <div class="char-section-title">Состояние обители</div>
         <div class="char-stats-card">
@@ -2650,6 +2818,9 @@ function renderPanel(id){
     `;
     renderIcons();
   }
+  if(id==="p-codex"){
+    renderCodex();
+  }
 }
 
 /* ============ РЕЛИКВИИ И ПОРТРЕТ ============ */
@@ -2696,6 +2867,353 @@ const HERO_RELICS = [
   }
 ];
 
+const CODEX_LOCATIONS = [
+  {
+    id: "abbey",
+    title: "Аббатство Сен-Дени",
+    tag: "Королевская обитель",
+    chapter: "Пролог · Главы I–IV",
+    desc: "Главный бенедиктинский монастырь Франции, усыпальница французских монархов и колыбель готического зодчества под Парижем.",
+    history: "В 1140-х годах аббат Сугерий начал перестройку базилики Сен-Дени, впервые объединив стрельчатые арки, крестовые нервюрные своды и витражи. Это ознаменовало рождение готики."
+  },
+  {
+    id: "cell",
+    title: "Келья брата Луки",
+    tag: "Тайное убежище",
+    chapter: "Главы I–II",
+    desc: "Тесная монашеская келья с каменными стенами и пюпитром, где под половицами сокрыты запретные формуляры и чертежи будущего.",
+    history: "Кельи монахов-бенедиктинцев были предельно аскетичны. Любая личная собственность каралась по уставу, поэтому хранение записей требовало строгой конспирации."
+  },
+  {
+    id: "scriptorium",
+    title: "Скрипторий обители",
+    tag: "Центр книжности",
+    chapter: "Главы I, III",
+    desc: "Зал переписчиков кодексов с высокими пюпитрами, где при свечах копируются Священное Писание, античные авторы и монастырские хроники.",
+    history: "Скриптории XII века были единственными хранителями письменной культуры в Европе. Пергамент стоил баснословно дорого: на одну Библию требовалось до 300 овечьих кож."
+  },
+  {
+    id: "infirmary",
+    title: "Монастырский лазарет",
+    tag: "Обитель милосердия",
+    chapter: "Глава I",
+    desc: "Лазарет для недужных братий и окрестных мирян. Место противостояния зарождающейся антисептики и векового догмата о кровопускании.",
+    history: "В средневековых госпиталях врачевание подчинялось теории Галена: баланс телесных жидкостей пытались восстановить обильными кровопусканиями, что часто ускоряло гибель больных."
+  },
+  {
+    id: "well",
+    title: "Монастырский колодец",
+    tag: "Источник воды",
+    chapter: "Глава I",
+    desc: "Каменный колодезный сруб в центре двора, ставший очагом лихорадки из-за близкого соседства со сточной канавой.",
+    history: "До открытия микроорганизмов в XIX веке люди не связывали вспышки тифа и холеры с качеством питьевой воды, считая эпидемии 'божьей карой' или порчей воздуха (миазмами)."
+  },
+  {
+    id: "hall",
+    title: "Монастырские житницы",
+    tag: "Хозяйственный двор",
+    chapter: "Главы II–III",
+    desc: "Массивные каменные хранилища с высокими сводами, где сберегаются годовые запасы зерна, бочки с вином и монастырская десятина.",
+    history: "Монастырские зернохранилища спасали от вымирания целые округа в неурожайные годы. Умение сберечь хлеб от сырости и грызунов было ключевым условием выживания."
+  },
+  {
+    id: "village",
+    title: "Деревня у тракта",
+    tag: "Мир мирян",
+    chapter: "Главы I–II",
+    desc: "Крестьянские хижины под соломенными крышами вдоль парижского тракта, зависимые от милости аббатства и капризов природы.",
+    history: "Большинство крестьян Иль-де-Франс конца XII века были сервами или вилланами, обязанными отрабатывать барщину и платить натуральный оброк аббатству Сен-Дени."
+  },
+  {
+    id: "field",
+    title: "Общинные поля",
+    tag: "Земледелие",
+    chapter: "Глава II",
+    desc: "Широкие клинья пашни, где Брат Лука закладывает основы трёхпольного севооборота и сеет кормовой клевер.",
+    history: "Переход от двухполья к трёхполью (озимые, яровые, пар) в XII–XIII веках увеличил продуктивность пашни на треть и позволил прокормить растущие европейские города."
+  },
+  {
+    id: "chapel",
+    title: "Часовня обители",
+    tag: "Святое место",
+    chapter: "Главы I, IV",
+    desc: "Романский придел с полукруглыми сводами и алтарем, где приор Гийом творит молитвы, а римский эмиссар ищет следы ереси.",
+    history: "Романские храмы отличались толстыми массивными стенами и узкими окнами-бойницами, создававшими мистический полумрак, который готика вскоре заменила сиянием витражей."
+  },
+  {
+    id: "chapterhouse",
+    title: "Зал Капитула",
+    tag: "Власть и суд",
+    chapter: "Глава III",
+    desc: "Величественный зал собраний монастырского совета под нервюрными сводами, где вершатся дела казны, ярмарочных пошлин и судов.",
+    history: "Капитул («Capitulum») собирался ежедневно: монахи читали устав св. Бенедикта, исповедовались в проступках и открыто голосовали по важнейшим хозяйственным вопросам обители."
+  },
+  {
+    id: "market",
+    title: "Ярмарка Ланди",
+    tag: "Торговля и пути",
+    chapter: "Глава III",
+    desc: "Шумная ярмарочная площадь у стен Сен-Дени, собирающая купцов из Фландрии, Италии и Германии. Центр обмена серебром, солью и сукном.",
+    history: "Ландийская ярмарка («Foire du Lendit»), основанная в 1109 году, была одной из богатейших во Франции. Право сбора торговых пошлин принадлежало лично аббату Сен-Дени."
+  },
+  {
+    id: "river",
+    title: "Река и плотина",
+    tag: "Гидроинженерия",
+    chapter: "Глава IV",
+    desc: "Строительные леса и шпунтовые сваи на реке, где Брат Лука и мастер Ренье возводят плотину и передовую водяную мельницу.",
+    history: "В XII веке водяные колеса стали первой промышленной революцией Европы. Их энергию использовали для помола муки, подъема молотов в кузницах и валяния сукна."
+  }
+];
+
+const CODEX_CHARACTERS = [
+  {
+    id: "odon",
+    name: "Аббат Одон",
+    title: "Настоятель королевского аббатства Сен-Дени",
+    order: "Орден св. Бенедикта · Преемник Сугерия",
+    badge: "Покровитель",
+    badgeType: "ally",
+    desc: "Глава монастыря, дипломат и придворный политик. Лавирует между королём Филиппом II и Папским престолом. Оценивает Луку по плодам: пока реформы приносят авторитет и доход обители, аббат готов прикрывать брата своей мантией.",
+    quote: "«Монастырь держится не только истовой молитвой, но и порядком в книгах. Не ссорь меня с Римом, и Сен-Дени встанет за тебя горой.»",
+    relation: "Опирается на твою мудрость в переговорах с короной"
+  },
+  {
+    id: "guillaume",
+    name: "Приор Гийом",
+    title: "Старейшина капитула и главный лекарь",
+    order: "Хранитель Устава св. Бенедикта",
+    badge: "Хранитель канона",
+    badgeType: "neutral",
+    desc: "Консервативный старейшина, отдавший сорок лет лазарету и молитвам. Верит в очистительное кровопускание и промысел Божий. Смотрит на научные методы Луки с подозрением, но искренне радуется исцелению каждого послушника.",
+    quote: "«Господь посылает хвори для очищения духа, а не для гордыни ума. Но если твоя кипячёная вода спасла людей — я не стану свидетельствовать против тебя.»",
+    relation: "Внимательно наблюдает за каждым твоим шагом"
+  },
+  {
+    id: "toma",
+    name: "Послушник Тома",
+    title: "Младший писец и чертёжник",
+    order: "Ученик Луки · Скрипторий Сен-Дени",
+    badge: "Верный ученик",
+    badgeType: "ally",
+    desc: "Юноша с живым аналитическим умом. Лука обучил его арабским цифрам, геометрическим проекциям и основам механики. Тома бесстрашно прячет тайные чертежи в лапидарии и готов свидетельствовать за наставника перед любым трибуналом.",
+    quote: "«Брат Лука, я закончил чертёж привода мельницы в трёх проекциях, как вы учили! Ни один каноник не догадается, что за этими линиями.»",
+    relation: "Преданно хранит тайну твоих записей"
+  },
+  {
+    id: "simon",
+    name: "Староста Симон",
+    title: "Выборный староста крестьянской общины",
+    order: "Деревня у стен Сен-Дени",
+    badge: "Голос земли",
+    badgeType: "ally",
+    desc: "Суровый, немногословный пахарь, привыкший к капризам природы и феодальным поборам. Поначалу насторожен к монашеским новшествам, но, увидев двойной урожай и чистый колодец, становится преданнейшим союзником Луки среди мирян.",
+    quote: "«Земля не слушает латинских молитв, брат. Земля любит умные руки. Твой клевер спас моих ребятишек от голодной зимы, и деревня этого не забудет.»",
+    relation: "Защитит тебя от гнева сеньора и бунта толпы"
+  },
+  {
+    id: "raimund",
+    name: "Брат Раймунд",
+    title: "Визитатор Святого Престола",
+    order: "Папская курия · Римский эмиссар",
+    badge: "Взор Инквизиции",
+    badgeType: "threat",
+    desc: "Блестяще образованный римский богослов с холодным, проницательным взором. Прибыл в Сен-Дени расследовать слухи о «чудесных исцелениях» и дерзких чертежах. В любом рациональном знании ищет козни дьявола или смертный грех гордыни.",
+    quote: "«Знание без смирения есть семя падения Люцифера. Ты говоришь о невидимых глазу причинах хвори, брат Лука... Не лукавый ли нашёптывает их тебе в ночи?»",
+    relation: "Готовит досье для папского трибунала"
+  }
+];
+
+const ACHIEVEMENTS = [
+  {
+    id: "ach_clean_water",
+    title: "Чистая вода",
+    sub: "Победа над горячкой",
+    ic: "sparkle",
+    desc: "Искоренить лихорадку в монастырском лазарете без единого кровопускания, внедрив кипячение воды и антисептику.",
+    quote: "«Вода, очищенная огнем, вернула жизнь тем, кого уже готовились соборовать.»",
+    check: st => st.flags.has("hygiene") && !st.usedBloodletting
+  },
+  {
+    id: "ach_threefield",
+    title: "Магистр трёхполья",
+    sub: "Аграрная революция",
+    ic: "crown",
+    desc: "Заложить основы севооборота и клеверных полей, удвоив урожай и избавив округу Сен-Дени от угрозы зимнего голода.",
+    quote: "«Три клина земли — озимые, яровые и пар с клевером — преобразили серые равнины Пикардии.»",
+    check: st => st.flags.has("threefield") || st.flags.has("clover_seeds") || st.flags.has("clover_soil")
+  },
+  {
+    id: "ach_stealth",
+    title: "Невидимка для Рима",
+    sub: "Мудрость осторожности",
+    ic: "rosary",
+    desc: "Преодолеть череду проверок и дознаний, ни разу не подняв подозрение инквизитора выше порога «Спокойно».",
+    quote: "«Lumen in tenebris sine flamma — свет зажжён, но пламя не выдало руки зодчего.»",
+    check: st => (st.month > 4 || st.flags.size >= 3) && ((st.maxRiskEver||0) <= 3)
+  },
+  {
+    id: "ach_light",
+    title: "Свет сквозь камень",
+    sub: "Рождение готики",
+    ic: "church",
+    desc: "Воплотить идеи аббата Сугерия о стрельчатых нервюрах и богословии сияющего небесного света.",
+    quote: "«Тяжесть камня побеждена стрельчатой аркой, и храм наполнился божественным сиянием.»",
+    check: st => st.flags.has("theology_of_light") || st.flags.has("arch_shoring") || st.flags.has("infra_bridge")
+  },
+  {
+    id: "ach_archive",
+    title: "Тайный архивариус",
+    sub: "Хранитель будущего",
+    ic: "scroll",
+    desc: "Сберечь тайные формуляры XXI века, создать тайник в лапидарии и обезоружить папских эмиссаров глубокой схоластикой.",
+    quote: "«Чертежи машин и формулы антисептики надёжно укрыты под древними плитами капитула.»",
+    check: st => st.flags.has("hidden_archive") || st.flags.has("scribe") || st.flags.has("arabic_treatise")
+  },
+  {
+    id: "ach_treasury",
+    title: "Хозяин казны",
+    sub: "Экономический суверенитет",
+    ic: "coin",
+    desc: "Удостоиться сана Советника монастыря и разблокировать прямое управление казной и налогами Сен-Дени.",
+    quote: "«Золотые ливры служат не роскоши прелатов, а великим стройкам и благу общины.»",
+    check: st => st.treasuryUnlocked || (st.influence >= 5)
+  },
+  {
+    id: "ach_mechanic",
+    title: "Великий механик",
+    sub: "Покорение реки",
+    ic: "knife",
+    desc: "Обуздать течение реки, возвести плотину и запустить передовое водяное колесо с кривошипным механизмом.",
+    quote: "«Тяжкий труд десятков молотобойцев и мукомолов впервые переложен на неутомимую силу воды.»",
+    check: st => st.flags.has("infra_mill") || st.flags.has("arabic_gears") || st.flags.has("infra_aqueduct")
+  },
+  {
+    id: "ach_lumen",
+    title: "Lumen in Tenebris",
+    sub: "Вершина пути",
+    ic: "lens",
+    desc: "Снискать непререкаемый авторитет среди короны, церкви и народа, достигнув наивысшего ранга «Архитектор Истории».",
+    quote: "«Ты пришёл монахом без имени, а стал человеком, повернувшим стрелку европейских веков.»",
+    check: st => st.influence >= 18
+  }
+];
+
+function checkAchievements(st){
+  if(!st) return;
+  if(!st.achievements) st.achievements = new Set();
+  for(const a of ACHIEVEMENTS){
+    if(!st.achievements.has(a.id) && a.check(st)){
+      st.achievements.add(a.id);
+    }
+  }
+}
+
+let curCodexTab = "atlas";
+
+function switchCodexTab(tab){
+  curCodexTab = tab;
+  const tabA = $("tabAtlas"), tabP = $("tabPersons");
+  if(tabA && tabP){
+    if(tab==="atlas"){
+      tabA.classList.add("active");
+      tabP.classList.remove("active");
+    } else {
+      tabP.classList.add("active");
+      tabA.classList.remove("active");
+    }
+  }
+  renderCodex();
+}
+
+function renderCodex(){
+  const body = $("codexBody");
+  if(!body) return;
+  if(curCodexTab === "atlas"){
+    const unl = S && S.unlockedLocations ? S.unlockedLocations : new Set(["abbey","infirmary"]);
+    body.innerHTML = `
+      <div class="codex-subdesc">
+        12 ключевых мест аббатства и окрестностей. По мере странствий гравюры и исторические хроники открываются в Кодексе.
+      </div>
+      <div class="codex-atlas-grid">
+        ${CODEX_LOCATIONS.map(loc=>{
+          const isOpen = unl.has(loc.id);
+          const imgUrl = ART_IMG[loc.id] || "img/new_vers/art_abbey.jpg";
+          return `
+            <div class="codex-loc-card ${isOpen?'':'locked-card'}" onclick="openLocDlg('${loc.id}')" title="${loc.title}">
+              <div class="codex-loc-thumb">
+                <img src="${imgUrl}" alt="${loc.title}">
+                <span class="codex-loc-status ${isOpen?'unlocked':'locked'}">${isOpen?'Открыто':'В пути'}</span>
+              </div>
+              <div class="codex-loc-body">
+                <div class="codex-loc-title">${loc.title}</div>
+                <div class="codex-loc-tag">${loc.tag}</div>
+                <div class="codex-loc-hint">
+                  <span class="ic" data-ic="sparkle"></span>
+                  <span>${isOpen?'Изучить хроники':'Взглянуть'}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  } else {
+    body.innerHTML = `
+      <div class="codex-subdesc">
+        Исторические свидетельства и досье на ключевых лиц, чьи решения влияют на судьбу Брата Луки и обители Сен-Дени.
+      </div>
+      <div class="codex-persons-list">
+        ${CODEX_CHARACTERS.map(c=>`
+          <div class="codex-person-card">
+            <div class="codex-person-head">
+              <div class="codex-person-meta">
+                <div class="codex-person-name">${c.name}</div>
+                <div class="codex-person-title">${c.title}</div>
+              </div>
+              <span class="codex-person-badge ${c.badgeType}">${c.badge}</span>
+            </div>
+            <div class="codex-person-desc">${c.desc}</div>
+            <div class="codex-person-quote">${c.quote}</div>
+            <div class="codex-person-relation">
+              <span class="ic" data-ic="sparkle"></span>
+              <span><strong>Отношение к Луке:</strong> ${c.relation}</span>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+  renderIcons();
+}
+
+function openLocDlg(id){
+  const loc = CODEX_LOCATIONS.find(x=>x.id===id);
+  if(!loc) return;
+  const imgUrl = ART_IMG[loc.id] || "img/new_vers/art_abbey.jpg";
+  if($("locDlgArt")) $("locDlgArt").innerHTML = `<img src="${imgUrl}" alt="${loc.title}">`;
+  if($("locDlgTag")) $("locDlgTag").textContent = `${loc.tag} · ${loc.chapter}`;
+  if($("locDlgTitle")) $("locDlgTitle").textContent = loc.title;
+  if($("locDlgDesc")) $("locDlgDesc").textContent = loc.desc;
+  if($("locDlgHistory")) $("locDlgHistory").textContent = loc.history;
+  $("locDlg").classList.add("active");
+}
+function closeLocDlg(){ $("locDlg").classList.remove("active"); }
+
+function openAchDlg(id){
+  const a = ACHIEVEMENTS.find(x=>x.id===id);
+  if(!a) return;
+  const isDone = S && S.achievements && S.achievements.has(a.id);
+  if($("achDlgIcon")) $("achDlgIcon").innerHTML = ICONS[a.ic] ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">${ICONS[a.ic]}</svg>` : "";
+  if($("achDlgBadge")) $("achDlgBadge").textContent = isDone ? "Обет свершён" : "Обет Зодчего";
+  if($("achDlgTitle")) $("achDlgTitle").textContent = a.title;
+  if($("achDlgSub")) $("achDlgSub").textContent = `${a.sub} · ${isDone ? "Вписано в анналы Сен-Дени" : "Ожидает свершения"}`;
+  if($("achDlgDesc")) $("achDlgDesc").textContent = a.desc;
+  if($("achDlgQuote")) $("achDlgQuote").textContent = a.quote;
+  $("achDlg").classList.add("active");
+}
+function closeAchDlg(){ $("achDlg").classList.remove("active"); }
+
 function openRelicDlg(id){
   const r = HERO_RELICS.find(x=>x.id===id);
   if(!r) return;
@@ -2714,10 +3232,16 @@ function closePortraitDlg(){ $("portraitDlg").classList.remove("active"); }
 
 window.addEventListener("keydown", e => {
   if(e.key === "Escape"){
+    closeLocDlg();
+    closeAchDlg();
     closeRelicDlg();
     closePortraitDlg();
     closeDlg();
+    closePanels();
   }
+  if(e.key === "l" || e.key === "д") openPanel('p-chron');
+  if(e.key === "h" || e.key === "р") openPanel('p-char');
+  if(e.key === "c" || e.key === "с") openPanel('p-codex');
 });
 
 /* ============ ДИАЛОГ / СТАРТ ============ */
