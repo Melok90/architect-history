@@ -79,193 +79,229 @@ svg.pix{shape-rendering:geometricPrecision;width:16px;height:16px;flex-shrink:0}
   flex-shrink:0;
 }
 
-/* ============ ШАПКА ИГРЫ / HUD — Компактная двухстрочная архитектура ============ */
+/* ============ ШАПКА ИГРЫ / HUD — «Монастырская Печать» (Гибрид 1) ============ */
 .ghead{
   position:sticky;
   top:0;
   z-index:25;
-  background:rgba(13, 20, 17, 0.96);
-  -webkit-backdrop-filter:blur(12px);
-  backdrop-filter:blur(12px);
+  background:rgba(14, 22, 18, 0.97);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border);
   transition:border-color .35s, box-shadow .35s;
   padding-top:var(--safe-top);
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  padding-bottom:6px;
 }
 .ghead.risk-alert-pulse{
   animation:riskGlowPulse 1.4s cubic-bezier(.2,.8,.2,1);
 }
 @keyframes riskGlowPulse{
-  0%{border-bottom-color:rgba(224,83,76,.85);box-shadow:0 4px 20px rgba(224,83,76,.3)}
-  50%{border-bottom-color:rgba(224,83,76,.5);box-shadow:0 2px 10px rgba(224,83,76,.18)}
+  0%{border-bottom-color:rgba(224,83,76,.9);box-shadow:0 4px 20px rgba(224,83,76,.35)}
+  50%{border-bottom-color:rgba(224,83,76,.5);box-shadow:0 2px 10px rgba(224,83,76,.2)}
   100%{border-bottom-color:var(--border);box-shadow:none}
 }
 
-/* Строка 1: Хронология слева, Ресурсы справа */
-.ghead-bar{
+/* Строка 1: Хронология слева, Ресурсы и звук справа */
+.ghead-row-top{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:10px;
-  padding:6px 16px 5px;
+  padding:6px 14px 0;
+  gap:8px;
 }
-.ghead-chronicle{
+.ghead-left{
   display:inline-flex;
   align-items:baseline;
   gap:6px;
   cursor:pointer;
-  padding:3px 6px;
-  margin-left:-6px;
+  padding:2px 4px;
+  margin-left:-4px;
   border-radius:4px;
   transition:background .2s;
-  min-width:0;
   flex:none;
 }
-.ghead-chronicle:hover{background:var(--surface-hi)}
+.ghead-left:hover{background:var(--surface-hi)}
 .ghead-year{
   font-family:'Spectral',Georgia,serif;
-  font-size:16px;
-  font-weight:500;
+  font-size:17px;
+  font-weight:600;
   color:var(--text);
+  letter-spacing:.02em;
   font-variant-numeric:tabular-nums;
   line-height:1;
 }
-.ghead-dot{color:var(--text-faint);font-size:12px}
 .ghead-turn{
   font-family:'IBM Plex Sans',sans-serif;
   font-size:10px;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  color:var(--text-faint);
-  line-height:1;
-}
-.ghead-chapter-tag{
-  font-family:'IBM Plex Sans',sans-serif;
-  font-size:9.5px;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  color:var(--gold);
-  background:rgba(183,154,86,.1);
-  padding:1px 5px;
-  border-radius:3px;
-  border:1px solid rgba(183,154,86,.22);
-  margin-left:2px;
-  white-space:nowrap;
-}
-
-/* Статы ресурсов */
-.ghead-stats{
-  display:inline-flex;
-  align-items:center;
-  gap:4px;
-  cursor:pointer;
-  padding:2px;
-  margin-right:-4px;
-  border-radius:6px;
-  transition:background .2s;
-  flex:none;
-}
-.ghead-stats:hover{background:var(--surface-hi)}
-.ghead-right{display:inline-flex;align-items:center;gap:8px;flex:none}
-.ghead-sound-btn{background:transparent;border:1px solid rgba(183,154,86,.28);color:var(--gold);border-radius:4px;
-  cursor:pointer;padding:2px 6px;font-size:12px;line-height:1;display:inline-flex;align-items:center;
-  justify-content:center;transition:all .2s ease;user-select:none;box-sizing:border-box;min-height:24px}
-.ghead-sound-btn:hover{background:var(--surface-hi);border-color:var(--border-lit);transform:scale(1.08)}
-.ghead-sound-btn.muted{border-color:rgba(255,255,255,.08);color:var(--text-faint);opacity:.6;transform:none}
-.ghead-stat{
-  position:relative;
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  padding:3px 7px;
-  border-radius:4px;
-  background:rgba(255,255,255,.025);
-  border:1px solid rgba(255,255,255,.05);
-  line-height:1;
-}
-.ghead-stat .ic{width:12px;height:12px;color:var(--gold);opacity:.88}
-.ghead-stat-lbl{
-  display:none;
-  font-family:'IBM Plex Sans',sans-serif;
-  font-size:9.5px;
   letter-spacing:.08em;
   text-transform:uppercase;
   color:var(--text-faint);
   line-height:1;
 }
-@media(min-width:440px){
-  .ghead-stat-lbl{display:inline}
-  .ghead-stats{gap:6px}
+.ghead-chapter-badge{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:9.5px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--gold);
+  border:1px solid rgba(183,154,86,.3);
+  padding:1px 6px;
+  border-radius:3px;
+  background:rgba(183,154,86,.06);
+  line-height:1.2;
+  white-space:nowrap;
 }
-.ghead-stat-val{
+
+/* Правая часть: триада ресурсов и колокол */
+.ghead-right{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  flex:none;
+}
+.ghead-stat-triad{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  cursor:pointer;
+  padding:2px 4px;
+  margin-right:-4px;
+  border-radius:4px;
+  transition:background .2s;
+}
+.ghead-stat-triad:hover{background:var(--surface-hi)}
+.triad-item{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:3.5px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:11.5px;
+  font-weight:600;
+  color:var(--text);
+  line-height:1;
+}
+.triad-ic{
+  font-size:11px;
+  line-height:1;
+  opacity:.95;
+}
+.triad-val{
   font-family:'Spectral',Georgia,serif;
-  font-size:14px;
+  font-size:13.5px;
   font-weight:600;
   color:var(--text);
   font-variant-numeric:tabular-nums;
   line-height:1;
 }
 
+.ghead-sound-btn{
+  background:transparent;
+  border:1px solid rgba(183,154,86,.28);
+  color:var(--gold);
+  border-radius:4px;
+  cursor:pointer;
+  padding:2px 6px;
+  font-size:11.5px;
+  line-height:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  transition:all .2s ease;
+  user-select:none;
+  min-height:22px;
+}
+.ghead-sound-btn:hover{background:var(--surface-hi);border-color:var(--border-lit);transform:scale(1.08)}
+.ghead-sound-btn.muted{border-color:rgba(255,255,255,.08);color:var(--text-faint);opacity:.6;transform:none}
+
 /* Всплывающие микро-дельты (+1 / -1) */
 .stat-delta{
   position:absolute;
-  top:-14px;
-  right:1px;
+  top:-13px;
+  right:-2px;
   font-family:'IBM Plex Sans',sans-serif;
   font-size:9.5px;
-  font-weight:600;
-  letter-spacing:.04em;
+  font-weight:700;
+  letter-spacing:.02em;
   padding:0 3px;
   border-radius:3px;
   pointer-events:none;
   opacity:0;
-  transform:translateY(4px);
-  transition:none;
-  z-index:15;
+  transform:translateY(3px);
+  transition:opacity .25s ease, transform .25s ease;
+  z-index:5;
+  white-space:nowrap;
 }
 .stat-delta.show{
   opacity:1;
-  transform:translateY(-3px);
-  transition:opacity .3s, transform .45s cubic-bezier(.2,.8,.2,1);
+  transform:translateY(0);
 }
 .stat-delta.delta-up{
   color:var(--sage);
-  background:rgba(163,188,148,.18);
-  border:1px solid rgba(163,188,148,.35);
-  box-shadow:0 2px 6px rgba(0,0,0,.4);
+  background:rgba(92,166,118,.15);
+  border:1px solid rgba(92,166,118,.3);
 }
 .stat-delta.delta-down{
-  color:var(--burgundy);
-  background:rgba(192,115,109,.2);
-  border:1px solid rgba(192,115,109,.4);
-  box-shadow:0 2px 6px rgba(0,0,0,.4);
+  color:var(--risk);
+  background:rgba(224,83,76,.15);
+  border:1px solid rgba(224,83,76,.3);
 }
 
-/* Строка 2: Риск Инквизиции */
-.ghead-risk{
-  padding:3px 16px 7px;
-  display:flex;
-  flex-direction:column;
-  gap:5px;
-}
-.ghead-risk-meta{
+/* Строка 2: Взор Инквизиции */
+.ghead-row-bottom{
   display:flex;
   align-items:center;
   justify-content:space-between;
+  padding:0 14px 1px;
   gap:8px;
 }
-.ghead-risk-title{
+.ghead-risk-left{
   display:inline-flex;
   align-items:center;
-  gap:5px;
-  font-family:'IBM Plex Sans',sans-serif;
-  font-size:9.5px;
-  letter-spacing:.14em;
+  gap:7px;
+  cursor:pointer;
+}
+.mini-seal{
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:radial-gradient(circle, #2A170F 0%, #101814 90%);
+  border:1px solid var(--risk-amber);
+  box-shadow:0 0 7px rgba(214,138,54,.4);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  filter:drop-shadow(0 0 2px rgba(214,138,54,.6));
+  transition:transform .2s, box-shadow .2s;
+  flex:none;
+}
+.ghead-risk-left:hover .mini-seal{
+  transform:scale(1.1);
+  box-shadow:0 0 10px rgba(214,138,54,.65);
+}
+.seal-flare{
+  animation:sealFlare 1.4s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes sealFlare{
+  0%{transform:scale(1);box-shadow:0 0 7px rgba(214,138,54,.4)}
+  30%{transform:scale(1.25);box-shadow:0 0 16px rgba(224,83,76,.9), 0 0 24px rgba(214,138,54,.6)}
+  100%{transform:scale(1);box-shadow:0 0 7px rgba(214,138,54,.4)}
+}
+.seal-title{
+  color:var(--gold-dim);
+  font-size:10px;
+  letter-spacing:.08em;
   text-transform:uppercase;
-  color:var(--text-faint);
+  font-family:'IBM Plex Sans',sans-serif;
+  font-weight:600;
   line-height:1;
 }
-.ghead-risk-title .ic{width:12px;height:12px;color:var(--text-faint);transition:color .3s}
-.ghead-risk-valwrap{
+
+.ghead-risk-right{
   position:relative;
   display:inline-flex;
   align-items:center;
@@ -274,104 +310,102 @@ svg.pix{shape-rendering:geometricPrecision;width:16px;height:16px;flex-shrink:0}
 .ghead-risk-badge{
   font-family:'IBM Plex Sans',sans-serif;
   font-size:9px;
-  letter-spacing:.1em;
+  font-weight:600;
   text-transform:uppercase;
-  color:var(--text-dim);
-  padding:1px 5px;
+  letter-spacing:.08em;
+  color:var(--risk-amber);
+  background:rgba(214,138,54,.12);
+  padding:1px 6px;
   border-radius:3px;
-  background:rgba(255,255,255,.03);
-  border:1px solid var(--border-soft);
+  border:1px solid rgba(214,138,54,.3);
   transition:color .3s, border-color .3s, background .3s;
 }
 .ghead-risk-num{
-  font-family:'Spectral',Georgia,serif;
-  font-size:13.5px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:11px;
   color:var(--text-dim);
   line-height:1;
 }
 .ghead-risk-num b{
   font-weight:600;
+  color:var(--text);
   font-variant-numeric:tabular-nums;
   transition:color .3s;
 }
 .ghead-risk-num .risk-max{
-  font-size:10px;
+  font-size:9.5px;
   color:var(--text-faint);
-  font-family:'IBM Plex Sans',sans-serif;
   margin-left:1px;
 }
 
-/* Трек риска с пороговыми насечками */
-.grisk-track{
-  position:relative;
-  height:4px;
-  background:var(--surface);
-  border-radius:999px;
-  overflow:hidden;
-  border:1px solid var(--border-soft);
-}
-.grisk-fill{
+/* Ультратонкая светящаяся световая нить риска */
+.tension-thread{
   position:absolute;
-  top:0;
+  bottom:0;
   left:0;
+  right:0;
+  height:2px;
+  background:rgba(255,255,255,.05);
+  overflow:hidden;
+}
+.tension-fill{
   height:100%;
   width:2%;
-  border-radius:999px;
-  transition:width 360ms cubic-bezier(.2,.6,.3,1), background 360ms ease;
-  z-index:1;
-}
-.grisk-ticks{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:2;
-}
-.gtick{
-  position:absolute;
-  top:0;
-  bottom:0;
-  width:1px;
-  background:rgba(8,13,11,.75);
-  transform:translateX(-50%);
+  background:linear-gradient(90deg, rgba(201,169,98,.5) 0%, #D68A36 80%, #F59E0B 100%);
+  box-shadow:0 0 8px rgba(214,138,54,.7);
+  transition:width 360ms cubic-bezier(.2,.6,.3,1), background 360ms ease, box-shadow 360ms ease;
 }
 
+/* Всплывающий тултип инквизиции */
 .grisk-hint{
-  margin-top:4px;
+  margin:2px 14px 4px;
   font-family:'Spectral',Georgia,serif;
-  font-size:11.5px;
-  color:var(--amber);
+  font-size:12px;
+  color:var(--gold-bright);
   font-style:italic;
   line-height:1.35;
-  padding:5px 8px;
-  background:rgba(217,179,104,.07);
+  padding:6px 10px;
+  background:rgba(217,179,104,.08);
   border-radius:4px;
-  border:1px solid rgba(217,179,104,.18);
+  border:1px solid rgba(217,179,104,.22);
 }
 
-/* Строка 3 (только если есть активные флаги) */
-.flagsrow{
+.flagsrow{display:none}
+
+/* Всплывающие тосты отметок истории */
+.toast-container{
+  position:fixed;
+  bottom:74px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:100;
   display:flex;
-  flex-wrap:nowrap;
-  overflow-x:auto;
-  scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
-  gap:5px;
-  padding:0 16px 6px;
+  flex-direction:column;
+  gap:8px;
+  pointer-events:none;
+  width:90%;
+  max-width:360px;
 }
-.flagsrow::-webkit-scrollbar{display:none}
-.flagsrow:empty{display:none}
-.flagchip{
-  flex:none;
-  background:var(--surface);
-  border:1px solid var(--border);
-  color:var(--text-dim);
-  border-radius:3px;
+.history-toast{
+  background:rgba(14, 22, 18, 0.96);
+  border:1px solid var(--border-lit);
+  color:var(--text);
   font-family:'IBM Plex Sans',sans-serif;
-  font-size:9px;
-  padding:2px 6px;
-  letter-spacing:.05em;
-  text-transform:uppercase;
-  white-space:nowrap;
+  font-size:11.5px;
+  padding:8px 14px;
+  border-radius:6px;
+  box-shadow:0 8px 24px rgba(0,0,0,.6), 0 0 12px rgba(183,154,86,.2);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  animation:toastSlideUp .3s cubic-bezier(.2,.8,.2,1);
+  transition:opacity .4s ease, transform .4s ease;
+}
+.history-toast b{color:var(--gold-bright)}
+.history-toast.fade-out{opacity:0;transform:translateY(-8px)}
+@keyframes toastSlideUp{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
 }
 
 /* ============ ВЕСТИ ИЗ ВНЕШНЕГО МИРА ============ */
@@ -901,32 +935,29 @@ nav button.on{color:var(--gold)}
   <!-- ==================== ИГРА ==================== -->
   <section class="screen" id="scr-game">
     <div class="ghead" id="gameHead">
-      <div class="ghead-bar">
-        <div class="ghead-chronicle" onclick="openPanel('p-chron')" title="Открыть Летопись">
+      <!-- Строка 1: Летопись слева, Ресурсы и звук справа -->
+      <div class="ghead-row-top">
+        <div class="ghead-left" onclick="openPanel('p-chron')" title="Открыть Летопись">
           <span class="ghead-year" id="hYear">1180</span>
-          <span class="ghead-dot">·</span>
           <span class="ghead-turn" id="hTurn">Ход 1</span>
-          <span class="ghead-chapter-tag" id="hChapter">Глава I</span>
+          <span class="ghead-chapter-badge" id="hChapter">Глава I</span>
         </div>
 
         <div class="ghead-right">
-          <div class="ghead-stats" onclick="openPanel('p-char')" title="Открыть формуляр брата Луки">
-            <div class="ghead-stat" id="statProsperity" title="Процветание">
-              <span class="ic" data-ic="crown"></span>
-              <span class="ghead-stat-lbl">Проц.</span>
-              <span class="ghead-stat-val" id="vProsperity">0</span>
+          <div class="ghead-stat-triad" onclick="openPanel('p-char')" title="Открыть формуляр брата Луки">
+            <div class="triad-item" id="statProsperity" title="Процветание">
+              <span class="triad-ic">👑</span>
+              <span class="triad-val" id="vProsperity">0</span>
               <span class="stat-delta" id="deltaProsperity"></span>
             </div>
-            <div class="ghead-stat" id="statProgress" title="Прогресс">
-              <span class="ic" data-ic="book"></span>
-              <span class="ghead-stat-lbl">Прогр.</span>
-              <span class="ghead-stat-val" id="vProgress">0</span>
+            <div class="triad-item" id="statProgress" title="Прогресс">
+              <span class="triad-ic">📖</span>
+              <span class="triad-val" id="vProgress">0</span>
               <span class="stat-delta" id="deltaProgress"></span>
             </div>
-            <div class="ghead-stat" id="statInfluence" title="Влияние">
-              <span class="ic" data-ic="users"></span>
-              <span class="ghead-stat-lbl">Влиян.</span>
-              <span class="ghead-stat-val" id="hInf">0</span>
+            <div class="triad-item" id="statInfluence" title="Влияние">
+              <span class="triad-ic">👥</span>
+              <span class="triad-val" id="hInf">0</span>
               <span class="stat-delta" id="deltaInfluence"></span>
             </div>
           </div>
@@ -936,31 +967,28 @@ nav button.on{color:var(--gold)}
         </div>
       </div>
 
-      <div class="ghead-risk" id="gheadRisk">
-        <div class="ghead-risk-meta">
-          <div class="ghead-risk-title">
-            <span class="ic" data-ic="flame"></span>
-            <span class="ghead-risk-label">Инквизиция</span>
-          </div>
-          <div class="ghead-risk-valwrap">
-            <span class="ghead-risk-badge" id="riskStatus">Спокойно</span>
-            <span class="ghead-risk-num"><b id="riskVal">0</b><span class="risk-max">/15</span></span>
-            <span class="stat-delta" id="deltaRisk"></span>
-          </div>
+      <!-- Строка 2: Взор Инквизиции с круглой печатью слева, Подозрение справа -->
+      <div class="ghead-row-bottom">
+        <div class="ghead-risk-left" onclick="toggleRiskDetails()" title="Нажмите для сведений об угрозе">
+          <div class="mini-seal" id="miniSeal">🔥</div>
+          <span class="seal-title">Взор Инквизиции</span>
         </div>
-        <div class="grisk-track">
-          <div class="grisk-fill" id="riskFill"></div>
-          <div class="grisk-ticks">
-            <span class="gtick" style="left:20%" title="Порог: Наблюдение"></span>
-            <span class="gtick" style="left:46.7%" title="Порог: Подозрение"></span>
-            <span class="gtick" style="left:73.3%" title="Порог: Угроза ареста"></span>
-            <span class="gtick" style="left:93.3%" title="Порог: Арест"></span>
-          </div>
+
+        <div class="ghead-risk-right">
+          <span class="ghead-risk-badge" id="riskStatus">Спокойно</span>
+          <span class="ghead-risk-num"><b id="riskVal">0</b><span class="risk-max">/15</span></span>
+          <span class="stat-delta" id="deltaRisk"></span>
         </div>
-        <div class="grisk-hint" id="riskHint" style="display:none">Каждое смелое решение оставляет след. Если риск инквизиции достигнет предела (15) — дознание неизбежно.</div>
       </div>
 
-      <div class="flagsrow" id="flagsRow"></div>
+      <!-- Тонкая янтарная нить риска (2px) -->
+      <div class="tension-thread" id="tensionThread">
+        <div class="tension-fill" id="riskFill"></div>
+      </div>
+
+      <!-- Всплывающий тултип описания угрозы (по клику на Взор Инквизиции) -->
+      <div class="grisk-hint" id="riskHint" style="display:none">Каждое смелое решение привлекает внимание Рима. При достижении предела (15) — дознание неизбежно.</div>
+      <div class="flagsrow" id="flagsRow" style="display:none"></div>
     </div>
 
     <div class="scenewrap" id="sceneWrap">
@@ -2243,7 +2271,7 @@ function renderHUD(){
   }
 
   const riskHint = $("riskHint");
-  if(riskHint){ riskHint.style.display = (S.log.length === 0) ? "block" : "none"; }
+  if(riskHint && !riskHint.dataset.open){ riskHint.style.display = "none"; }
 
   renderIcons();
 }
@@ -2275,7 +2303,41 @@ function triggerDeltas(deltas){
       gh.classList.add("risk-alert-pulse");
       setTimeout(()=>{ if(gh) gh.classList.remove("risk-alert-pulse"); }, 1500);
     }
+    const seal = $("miniSeal");
+    if(seal){
+      seal.classList.remove("seal-flare");
+      void seal.offsetWidth;
+      seal.classList.add("seal-flare");
+      setTimeout(()=>{ if(seal) seal.classList.remove("seal-flare"); }, 1500);
+    }
   }
+}
+
+function toggleRiskDetails(){
+  const hint = $("riskHint");
+  if(hint){
+    const isOpen = hint.style.display === "block";
+    hint.style.display = isOpen ? "none" : "block";
+    hint.dataset.open = isOpen ? "" : "1";
+  }
+}
+
+function showHistoryToast(flagName){
+  let container = $("toastContainer");
+  if(!container){
+    container = document.createElement("div");
+    container.id = "toastContainer";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement("div");
+  toast.className = "history-toast";
+  toast.innerHTML = `<span class="toast-ic">📜</span> <span>Отмечено: <b>${flagName}</b></span>`;
+  container.appendChild(toast);
+  setTimeout(()=>{
+    toast.classList.add("fade-out");
+    setTimeout(()=> toast.remove(), 400);
+  }, 3200);
 }
 
 /* ============ РЕНДЕР СЦЕНЫ ============ */
@@ -2448,8 +2510,16 @@ function choose(ch){
     if(S.risk !== riskBefore) deltas._risk = S.risk - riskBefore;
   }
 
+  const newlyEarned = [];
+  if(ch.flag && !S.flags.has(ch.flag)) newlyEarned.push(ch.flag);
+  (ch.flags||[]).forEach(f=>{ if(!S.flags.has(f)) newlyEarned.push(f); });
+
   if(ch.flag) S.flags.add(ch.flag);
   (ch.flags||[]).forEach(f=>S.flags.add(f));
+
+  if(newlyEarned.length){
+    newlyEarned.forEach(f => showHistoryToast(FLAG_RU[f] || f));
+  }
 
   const prevRank = rankFor(S.influence - (deltas.influence||0));
   const newRank = rankFor(S.influence);

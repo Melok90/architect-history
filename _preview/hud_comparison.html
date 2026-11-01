@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Архитектор Истории — Концепты новой шапки HUD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080D0B;
+  --surface: #0E1612;
+  --surface-hi: #15221C;
+  --surface-lit: #1A2C24;
+  --border: rgba(183,154,86,.18);
+  --border-lit: rgba(183,154,86,.4);
+  --border-hi: rgba(211,188,126,.65);
+  --gold: #C9A962;
+  --gold-dim: #8F763E;
+  --gold-bright: #F0D590;
+  --text: #E8E4D9;
+  --text-dim: #9E9B90;
+  --text-faint: #5C5B54;
+  --risk: #E0534C;
+  --risk-amber: #D68A36;
+  --risk-calm: #5CA676;
+  --sage: #A3BC94;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #040706;
+  color: var(--text);
+  font-family: 'Spectral', Georgia, serif;
+  padding: 30px 16px 80px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page-header {
+  max-width: 900px;
+  margin: 0 auto 36px;
+  text-align: center;
+}
+.page-kicker {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.page-title {
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.page-desc {
+  font-size: 15px;
+  color: var(--text-dim);
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.concepts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.concept-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0,0,0,.6);
+  position: relative;
+}
+
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: rgba(183,154,86,.12);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom-right-radius: 8px;
+  color: var(--gold-bright);
+}
+.concept-badge.baseline {
+  background: rgba(224,83,76,.12);
+  color: #F87171;
+  border-color: rgba(224,83,76,.25);
+}
+
+.concept-meta {
+  padding: 14px 18px 10px;
+}
+.concept-name {
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--gold-bright);
+  margin-bottom: 4px;
+}
+.concept-tagline {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+/* ================== PHONE SCREEN MOCKUP ================== */
+.mock-phone {
+  background: #080D0B;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+/* Фейковый контент сцены под шапкой */
+.mock-scene-content {
+  padding: 16px 18px 24px;
+  opacity: .85;
+}
+.mock-art-stub {
+  width: 100%;
+  height: 130px;
+  background: #111A16 url('https://images.unsplash.com/photo-1548625361-195fe57874f7?auto=format&fit=crop&w=600&q=80') center/cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.mock-art-stub::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(8,13,11,.9) 100%);
+}
+.mock-scene-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.mock-scene-body {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ========================================================= */
+/* БАЗОВАЯ ШАПКА (Baseline: текущая 4-этажная)                */
+/* ========================================================= */
+.hud-baseline {
+  background: rgba(14,22,18,.96);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 14px 10px;
+}
+.hud-baseline .row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.hud-baseline .chron {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 15px;
+}
+.hud-baseline .chap {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9px;
+  color: var(--gold);
+  border: 1px solid rgba(183,154,86,.3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+.hud-baseline .stats {
+  display: flex;
+  gap: 4px;
+}
+.hud-baseline .stat-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9.5px;
+}
+.hud-baseline .stat-val {
+  font-family: 'Spectral', Georgia, serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.hud-baseline .row2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+}
+.hud-baseline .risk-tag {
+  color: var(--risk-amber);
+  background: rgba(214,138,54,.15);
+  border: 1px solid rgba(214,138,54,.35);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+}
+.hud-baseline .track {
+  height: 4px;
+  background: rgba(255,255,255,.08);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.hud-baseline .fill {
+  height: 100%;
+  width: 53.3%;
+  background: var(--risk-amber);
+  box-shadow: 0 0 6px rgba(214,138,54,.6);
+}
+.hud-baseline .chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.hud-baseline .chip {
+  flex: none;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 8.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,.025);
+  border: 1px solid rgba(255,255,255,.07);
+  color: var(--text-dim);
+}
+
+/* ========================================================= */
+/* ВАРИАНТ 1: «Монастырская хроника» (Ультракомпактный 2-уровневый) */
+/* ========================================================= */
+.hud-v1 {
+  background: linear-gradient(180deg, rgba(14,22,18,.98) 0%, rgba(10,16,13,.95) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 7px 14px 6px;
+  position: relative;
+}
+.hud-v1 .row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.hud-v1 .left-side {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.hud-v1 .year {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+}
+.hud-v1 .chap-badge {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(183,154,86,.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(183,154,86,.25);
+  font-weight: 500;
+}
+.hud-v1 .stat-triad {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hud-v1 .triad-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.hud-v1 .triad-item:hover { opacity: .75; }
+.hud-v1 .triad-ic {
+  font-size: 11px;
+  line-height: 1;
+}
+.hud-v1 .snd-btn {
+  background: transparent;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 2px;
+  opacity: .85;
+}
+
+.hud-v1 .row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  padding-top: 2px;
+}
+.hud-v1 .risk-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gold-dim);
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.hud-v1 .risk-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hud-v1 .risk-pill {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--risk-amber);
+  background: rgba(214,138,54,.12);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(214,138,54,.3);
+}
+.hud-v1 .risk-digits {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.hud-v1 .risk-digits b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Тонкая светящаяся нить внизу шапки */
+.hud-v1 .tension-thread {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255,255,255,.05);
+}
+.hud-v1 .tension-fill {
+  height: 100%;
+  width: 53.3%;
+  background: linear-gradient(90deg, rgba(201,169,98,.5) 0%, #D68A36 80%, #F59E0B 100%);
+  box-shadow: 0 0 8px rgba(214,138,54,.7);
+}
+
+/* ========================================================= */
+/* ВАРИАНТ 2: «Алтарь Решений» (Reigns / Pentiment Медальон) */
+/* ========================================================= */
+.hud-v2 {
+  background: radial-gradient(ellipse at 50% 0%, rgba(26,44,36,.8) 0%, rgba(14,22,18,.98) 75%);
+  border-bottom: 1px solid var(--border-lit);
+  padding: 8px 14px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.hud-v2 .chron-block {
+  display: flex;
+  flex-direction: column;
+}
+.hud-v2 .year-big {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text);
+}
+.hud-v2 .turn-sub {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+/* Центральный медальон Око Рима */
+.hud-v2 .medallion-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+.hud-v2 .medallion {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #22140D 0%, #0E1612 85%);
+  border: 1.5px solid var(--risk-amber);
+  box-shadow: 0 0 10px rgba(214,138,54,.35), inset 0 0 6px rgba(0,0,0,.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform .2s;
+}
+.hud-v2 .medallion:hover {
+  transform: scale(1.06);
+}
+.hud-v2 .med-flame {
+  font-size: 16px;
+  filter: drop-shadow(0 0 4px rgba(214,138,54,.8));
+}
+.hud-v2 .med-num {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: var(--surface);
+  border: 1px solid var(--risk-amber);
+  color: var(--gold-bright);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 8.5px;
+  font-weight: 700;
+  padding: 0 4px;
+  border-radius: 6px;
+  line-height: 1.3;
+}
+.hud-v2 .med-label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 8.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--risk-amber);
+  margin-top: 3px;
+  font-weight: 600;
+}
+
+/* Ресурсы со столбиками в стиле Reigns */
+.hud-v2 .reigns-bars {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+.hud-v2 .r-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+}
+.hud-v2 .r-meter {
+  width: 5px;
+  height: 22px;
+  background: rgba(255,255,255,.08);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+.hud-v2 .r-meter-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(201,169,98,.4);
+}
+.hud-v2 .r-ic {
+  font-size: 10.5px;
+  line-height: 1;
+}
+
+/* ========================================================= */
+/* ВАРИАНТ 3: «Модульный пергамент» (Складной HUD)          */
+/* ========================================================= */
+.hud-v3 {
+  background: rgba(14,22,18,.98);
+  border-bottom: 1px solid var(--border);
+  transition: all .25s ease;
+  position: relative;
+}
+.hud-v3 .compact-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.hud-v3 .c-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+.hud-v3 .c-badge {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(183,154,86,.3);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.hud-v3 .c-center {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px;
+  color: var(--risk-amber);
+  background: rgba(214,138,54,.12);
+  border: 1px solid rgba(214,138,54,.25);
+  padding: 2px 7px;
+  border-radius: 12px;
+}
+.hud-v3 .c-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hud-v3 .c-stats {
+  display: flex;
+  gap: 7px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+}
+.hud-v3 .c-arrow {
+  color: var(--gold-dim);
+  font-size: 10px;
+  transition: transform .25s;
+}
+
+/* Развернутый свиток */
+.hud-v3.expanded .c-arrow {
+  transform: rotate(180deg);
+}
+.hud-v3 .expanded-panel {
+  display: none;
+  padding: 10px 14px 12px;
+  background: rgba(10,16,13,.95);
+  border-top: 1px solid rgba(183,154,86,.1);
+}
+.hud-v3.expanded .expanded-panel {
+  display: block;
+}
+.hud-v3 .exp-quote {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-bottom: 8px;
+  border-left: 2px solid var(--gold-dim);
+  padding-left: 8px;
+}
+.hud-v3 .exp-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.hud-v3 .exp-chip {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  color: var(--gold);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* ========================================================= */
+/* ГИБРИД А: «Печать Хроники» (Двухуровневый + Медальон)      */
+/* ========================================================= */
+.hud-hybrid-a {
+  background: rgba(14,22,18,.98);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 14px 7px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hud-hybrid-a .row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.hud-hybrid-a .left-side {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.hud-hybrid-a .year {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: .02em;
+}
+.hud-hybrid-a .chap-badge {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(183,154,86,.3);
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(183,154,86,.06);
+}
+.hud-hybrid-a .stat-triad {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text);
+}
+.hud-hybrid-a .triad-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+}
+.hud-hybrid-a .triad-ic {
+  font-size: 11px;
+}
+.hud-hybrid-a .snd-btn {
+  background: transparent;
+  border: none;
+  font-size: 11.5px;
+  cursor: pointer;
+  padding: 0 0 0 2px;
+  opacity: .8;
+}
+.hud-hybrid-a .row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1px;
+}
+.hud-hybrid-a .risk-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.hud-hybrid-a .mini-seal {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2A170F 0%, #101814 90%);
+  border: 1px solid var(--risk-amber);
+  box-shadow: 0 0 7px rgba(214,138,54,.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  filter: drop-shadow(0 0 2px rgba(214,138,54,.6));
+}
+.hud-hybrid-a .seal-title {
+  color: var(--gold-dim);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+}
+.hud-hybrid-a .risk-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hud-hybrid-a .risk-pill {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--risk-amber);
+  background: rgba(214,138,54,.12);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(214,138,54,.3);
+}
+.hud-hybrid-a .risk-digits {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.hud-hybrid-a .risk-digits b {
+  color: var(--text);
+  font-weight: 600;
+}
+.hud-hybrid-a .tension-thread {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255,255,255,.05);
+}
+.hud-hybrid-a .tension-fill {
+  height: 100%;
+  width: 53.3%;
+  background: linear-gradient(90deg, rgba(201,169,98,.5) 0%, #D68A36 80%, #F59E0B 100%);
+  box-shadow: 0 0 8px rgba(214,138,54,.7);
+}
+
+/* ========================================================= */
+/* ГИБРИД Б: «Алтарь Точных Чисел» (Триптих с цифрами)       */
+/* ========================================================= */
+.hud-hybrid-b {
+  background: radial-gradient(ellipse at 50% 0%, rgba(26,44,36,.85) 0%, rgba(14,22,18,.98) 75%);
+  border-bottom: 1px solid var(--border-lit);
+  padding: 8px 14px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.hud-hybrid-b .chron-block {
+  display: flex;
+  flex-direction: column;
+}
+.hud-hybrid-b .year-big {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text);
+}
+.hud-hybrid-b .turn-sub {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-top: 2px;
+}
+.hud-hybrid-b .medallion-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+.hud-hybrid-b .medallion {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #25130A 0%, #0E1612 85%);
+  border: 1.5px solid var(--risk-amber);
+  box-shadow: 0 0 12px rgba(214,138,54,.45), inset 0 0 6px rgba(0,0,0,.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform .2s;
+}
+.hud-hybrid-b .med-flame {
+  font-size: 16px;
+  filter: drop-shadow(0 0 5px rgba(214,138,54,.9));
+}
+.hud-hybrid-b .med-num {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: var(--surface);
+  border: 1px solid var(--risk-amber);
+  color: var(--gold-bright);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 8.5px;
+  font-weight: 700;
+  padding: 0 4px;
+  border-radius: 6px;
+  line-height: 1.3;
+}
+.hud-hybrid-b .med-label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 8.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--risk-amber);
+  margin-top: 3px;
+  font-weight: 600;
+}
+.hud-hybrid-b .stats-exact {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+}
+.hud-hybrid-b .exact-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.hud-hybrid-b .exact-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+.hud-hybrid-b .exact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 500;
+  color: var(--text);
+}
+.hud-hybrid-b .tension-thread {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255,255,255,.05);
+}
+.hud-hybrid-b .tension-fill {
+  height: 100%;
+  width: 53.3%;
+  background: linear-gradient(90deg, rgba(201,169,98,.5) 0%, #D68A36 80%, #F59E0B 100%);
+  box-shadow: 0 0 8px rgba(214,138,54,.7);
+}
+
+/* ========================================================= */
+/* ГИБРИД В: «Живой Алтарь» (Reigns Столбики + Цифры)         */
+/* ========================================================= */
+.hud-hybrid-c {
+  background: radial-gradient(ellipse at 50% 0%, rgba(26,44,36,.85) 0%, rgba(14,22,18,.98) 75%);
+  border-bottom: 1px solid var(--border-lit);
+  padding: 7px 14px 8px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+.hud-hybrid-c .chron-block {
+  display: flex;
+  flex-direction: column;
+}
+.hud-hybrid-c .year-big {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text);
+}
+.hud-hybrid-c .turn-sub {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-top: 2px;
+}
+.hud-hybrid-c .medallion-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+.hud-hybrid-c .medallion {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #25130A 0%, #0E1612 85%);
+  border: 1.5px solid var(--risk-amber);
+  box-shadow: 0 0 10px rgba(214,138,54,.4), inset 0 0 6px rgba(0,0,0,.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.hud-hybrid-c .med-flame {
+  font-size: 15px;
+  filter: drop-shadow(0 0 4px rgba(214,138,54,.9));
+}
+.hud-hybrid-c .med-num {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: var(--surface);
+  border: 1px solid var(--risk-amber);
+  color: var(--gold-bright);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 0 3.5px;
+  border-radius: 6px;
+  line-height: 1.3;
+}
+.hud-hybrid-c .med-label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 8px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--risk-amber);
+  margin-top: 3px;
+  font-weight: 600;
+}
+.hud-hybrid-c .reigns-numbers {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 9px;
+}
+.hud-hybrid-c .rn-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.hud-hybrid-c .rn-val {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  line-height: 1;
+}
+.hud-hybrid-c .rn-meter {
+  width: 5px;
+  height: 18px;
+  background: rgba(255,255,255,.08);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+.hud-hybrid-c .rn-meter-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(201,169,98,.4);
+}
+.hud-hybrid-c .rn-ic {
+  font-size: 10px;
+  line-height: 1;
+  margin-top: 1px;
+}
+.hud-hybrid-c .tension-thread {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255,255,255,.05);
+}
+.hud-hybrid-c .tension-fill {
+  height: 100%;
+  width: 53.3%;
+  background: linear-gradient(90deg, rgba(201,169,98,.5) 0%, #D68A36 80%, #F59E0B 100%);
+  box-shadow: 0 0 8px rgba(214,138,54,.7);
+}
+
+.diff-specs {
+  padding: 14px 18px;
+  background: rgba(255,255,255,.015);
+  border-top: 1px solid var(--border);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+}
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px dashed rgba(255,255,255,.05);
+}
+.spec-row:last-child { border-bottom: none; }
+.spec-label { color: var(--text-faint); }
+.spec-val { color: var(--gold-bright); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-kicker">Архитектура интерфейса · Новая версия</div>
+  <h1 class="page-title">Сравнение вариантов шапки HUD</h1>
+  <p class="page-desc">Интерактивные прототипы редизайна шапки для освобождения экрана от визуального шума и максимального погружения в исторический роман.</p>
+</div>
+
+<div class="concepts-grid">
+
+  <!-- ================= BASELINE ================= -->
+  <div class="concept-card">
+    <div class="concept-badge baseline">Текущее состояние (Baseline)</div>
+    <div class="concept-meta">
+      <div class="concept-name">Текущий 4-этажный HUD</div>
+      <div class="concept-tagline">Перегружен кирпичиками плашек, съедает до ~195px высоты на экране смартфона.</div>
+    </div>
+
+    <div class="mock-phone">
+      <div class="hud-baseline">
+        <div class="row1">
+          <div class="chron">
+            <b>1180</b> · <span style="font-size:12px;color:var(--text-faint)">ход 26</span>
+            <span class="chap">Глава III</span>
+          </div>
+          <div class="stats">
+            <div class="stat-box">👑 <span class="stat-val">10</span></div>
+            <div class="stat-box">📖 <span class="stat-val">7</span></div>
+            <div class="stat-box">👥 <span class="stat-val">5</span></div>
+            <span style="font-size:12px;margin-left:2px">🔔</span>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div style="color:var(--text-faint);display:flex;align-items:center;gap:4px">
+            <span>🔥</span> <span>ИНКВИЗИЦИЯ</span>
+          </div>
+          <div>
+            <span class="risk-tag">ПОДОЗРЕНИЕ</span>
+            <span style="font-weight:600;font-size:12px;color:var(--text)">8</span><span style="color:var(--text-faint);font-size:10px">/15</span>
+          </div>
+        </div>
+
+        <div class="track">
+          <div class="fill"></div>
+        </div>
+
+        <div class="chips">
+          <div class="chip">ЕСТЬ РУКОПИСЬ</div>
+          <div class="chip">ТРЁХПОЛЬЕ НАЧАТО</div>
+          <div class="chip">ГИЙОМ — СОЮЗНИК</div>
+          <div class="chip">ТОМА — ПИСЕЦ...</div>
+        </div>
+      </div>
+
+      <div class="mock-scene-content">
+        <div class="mock-art-stub"></div>
+        <div class="mock-scene-title">Зал Капитула</div>
+        <p class="mock-scene-body">Тяжёлые нервюрные своды эхом отзываются на слова приора Гийома. Папский легат молчит, перебирая чётки...</p>
+      </div>
+    </div>
+
+    <div class="diff-specs">
+      <div class="spec-row"><span class="spec-label">Высота шапки:</span> <span class="spec-val" style="color:#F87171">~195 px (24% экрана)</span></div>
+      <div class="spec-row"><span class="spec-label">Количество строк:</span> <span class="spec-val">4 уровня</span></div>
+      <div class="spec-row"><span class="spec-label">Фокус внимания:</span> <span class="spec-val">Раздроблен по серым плашкам</span></div>
+    </div>
+  </div>
+
+
+  <!-- ================= ВАРИАНТ 1 ================= -->
+  <div class="concept-card" style="border-color:var(--border-lit)">
+    <div class="concept-badge">Вариант 1 · Рекомендуемый</div>
+    <div class="concept-meta">
+      <div class="concept-name">«Монастырская хроника»</div>
+      <div class="concept-tagline">Ультракомпактный 2-уровневый HUD. Благородная простота без рамок, световая нить риска, максимум воздуха для чтения.</div>
+    </div>
+
+    <div class="mock-phone">
+      <div class="hud-v1">
+        <div class="row-top">
+          <div class="left-side">
+            <span class="year">1180</span>
+            <span class="chap-badge">Глава III</span>
+          </div>
+          <div class="stat-triad">
+            <div class="triad-item" title="Процветание"><span class="triad-ic">👑</span> 10</div>
+            <div class="triad-item" title="Прогресс"><span class="triad-ic">📖</span> 7</div>
+            <div class="triad-item" title="Влияние"><span class="triad-ic">👥</span> 5</div>
+            <button class="snd-btn" title="Звук">🔔</button>
+          </div>
+        </div>
+
+        <div class="row-bottom">
+          <div class="risk-left">
+            <span>🔥</span> Взор Инквизиции
+          </div>
+          <div class="risk-right">
+            <span class="risk-pill">Подозрение</span>
+            <span class="risk-digits"><b>8</b> <span style="color:var(--text-faint);font-size:9.5px">/ 15</span></span>
+          </div>
+        </div>
+
+        <div class="tension-thread">
+          <div class="tension-fill"></div>
+        </div>
+      </div>
+
+      <div class="mock-scene-content">
+        <div class="mock-art-stub"></div>
+        <div class="mock-scene-title">Зал Капитула</div>
+        <p class="mock-scene-body">Тяжёлые нервюрные своды эхом отзываются на слова приора Гийома. Текст сцены виден сразу без прокрутки экрана вниз.</p>
+      </div>
+    </div>
+
+    <div class="diff-specs">
+      <div class="spec-row"><span class="spec-label">Высота шапки:</span> <span class="spec-val" style="color:var(--sage)">64 px (минус 131 px!)</span></div>
+      <div class="spec-row"><span class="spec-label">Количество строк:</span> <span class="spec-val">2 изящные строки</span></div>
+      <div class="spec-row"><span class="spec-label">Судьба чипов:</span> <span class="spec-val">В меню «Герой» + всплывающие тосты</span></div>
+    </div>
+  </div>
+
+
+  <!-- ================= ВАРИАНТ 2 ================= -->
+  <div class="concept-card">
+    <div class="concept-badge">Вариант 2 · Reigns & Pentiment</div>
+    <div class="concept-meta">
+      <div class="concept-name">«Алтарь Решений»</div>
+      <div class="concept-tagline">Глубокая средневековая стилизация: центральный медальон Инквизиции и вертикальные микро-столбики ресурсов.</div>
+    </div>
+
+    <div class="mock-phone">
+      <div class="hud-v2">
+        <div class="chron-block">
+          <span class="year-big">1180</span>
+          <span class="turn-sub">Глава III · Х. 26</span>
+        </div>
+
+        <div class="medallion-wrap" title="Угроза Инквизиции: Подозрение (8/15)">
+          <div class="medallion">
+            <span class="med-flame">🔥</span>
+            <span class="med-num">8</span>
+          </div>
+          <span class="med-label">Подозрение</span>
+        </div>
+
+        <div class="reigns-bars">
+          <div class="r-col" title="Процветание: 10/10">
+            <div class="r-meter"><div class="r-meter-fill" style="height:100%"></div></div>
+            <span class="r-ic">👑</span>
+          </div>
+          <div class="r-col" title="Прогресс: 7/10">
+            <div class="r-meter"><div class="r-meter-fill" style="height:70%"></div></div>
+            <span class="r-ic">📖</span>
+          </div>
+          <div class="r-col" title="Влияние: 5/10">
+            <div class="r-meter"><div class="r-meter-fill" style="height:50%"></div></div>
+            <span class="r-ic">👥</span>
+          </div>
+          <span style="font-size:11px;margin-left:2px;cursor:pointer">🔔</span>
+        </div>
+      </div>
+
+      <div class="mock-scene-content">
+        <div class="mock-art-stub"></div>
+        <div class="mock-scene-title">Зал Капитула</div>
+        <p class="mock-scene-body">Тяжёлые нервюрные своды эхом отзываются на слова приора Гийома. Медальон по центру держит постоянное ощущение опасности.</p>
+      </div>
+    </div>
+
+    <div class="diff-specs">
+      <div class="spec-row"><span class="spec-label">Высота шапки:</span> <span class="spec-val">76 px</span></div>
+      <div class="spec-row"><span class="spec-label">Визуальный баланс:</span> <span class="spec-val">Столбики показывают уровень без цифр</span></div>
+      <div class="spec-row"><span class="spec-label">Атмосфера:</span> <span class="spec-val">Максимально физичный артефакт</span></div>
+    </div>
+  </div>
+
+
+  <!-- ================= ВАРИАНТ 3 ================= -->
+  <div class="concept-card">
+    <div class="concept-badge">Вариант 3 · Складной</div>
+    <div class="concept-meta">
+      <div class="concept-name">«Модульный пергамент»</div>
+      <div class="concept-tagline">Сверхтонкая строка 40px по умолчанию. Нажмите, чтобы раскрыть подробности угрозы и чипы флагов.</div>
+    </div>
+
+    <div class="mock-phone">
+      <div class="hud-v3" id="hudV3Demo" onclick="this.classList.toggle('expanded')">
+        <div class="compact-bar">
+          <div class="c-left">
+            <span style="font-weight:600">1180</span>
+            <span class="c-badge">Гл. III</span>
+          </div>
+          <div class="c-center">
+            <span>🔥 8/15</span>
+            <span style="font-size:8.5px;letter-spacing:.06em">ПОДОЗРЕНИЕ</span>
+          </div>
+          <div class="c-right">
+            <div class="c-stats">
+              <span>👑10</span>
+              <span>📖7</span>
+              <span>👥5</span>
+            </div>
+            <span class="c-arrow">▼</span>
+          </div>
+        </div>
+
+        <div class="expanded-panel">
+          <div class="exp-quote">«Римский легат приглядывается к лазарету. След скрыт, но допрос близок.»</div>
+          <div class="exp-chips">
+            <span class="exp-chip">Есть рукопись</span>
+            <span class="exp-chip">Трёхполье начато</span>
+            <span class="exp-chip">Гийом — союзник</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mock-scene-content">
+        <div class="mock-art-stub"></div>
+        <div class="mock-scene-title">Зал Капитула</div>
+        <p class="mock-scene-body">Нажмите на шапку выше, чтобы развернуть или свернуть дополнительные детали.</p>
+      </div>
+    </div>
+
+    <div class="diff-specs">
+      <div class="spec-row"><span class="spec-label">Высота шапки:</span> <span class="spec-val">42 px (свернуто) / 115 px (раскрыто)</span></div>
+      <div class="spec-row"><span class="spec-label">Интерактивность:</span> <span class="spec-val">Тап разворачивает детали</span></div>
+      <div class="spec-row"><span class="spec-label">Для кого:</span> <span class="spec-val">Любители полного контроля</span></div>
+    </div>
+  </div>
+
+
+  <!-- ================= СЕКЦИЯ ГИБРИДОВ ================= -->
+  <div style="text-align:center;margin:20px 0 10px;">
+    <div style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-bright);margin-bottom:4px">★ Скрещивание Вариантов 1 и 2 ★</div>
+    <div style="font-size:20px;font-weight:600;color:var(--text)">Гибридные концепты</div>
+    <div style="font-size:13px;color:var(--text-dim);max-width:380px;margin:4px auto 0">Объединение точности цифр, компактности и физического медальона Инквизиции</div>
+  </div>
+
+
+  <!-- ================= ГИБРИД 1 ================= -->
+  <div id="card-hybrid-a" class="concept-card" style="border:1.5px solid var(--border-hi);box-shadow:0 0 25px rgba(201,169,98,.15)">
+    <div class="concept-badge" style="background:rgba(201,169,98,.2);border-color:var(--border-hi)">Гибрид 1 · Рекомендуемый сплав</div>
+    <div class="concept-meta">
+      <div class="concept-name">«Монастырская Печать»</div>
+      <div class="concept-tagline">Двухуровневая ультракомпактная компоновка Варианта 1, но с круглым тлеющим медальоном Инквизиции из Варианта 2.</div>
+    </div>
+
+    <div class="mock-phone">
+      <div class="hud-hybrid-a">
+        <div class="row-top">
+          <div class="left-side">
+            <span class="year">1180</span>
+            <span class="chap-badge">Глава III</span>
+          </div>
+          <div class="stat-triad">
+            <div class="triad-item" title="Процветание"><span class="triad-ic">👑</span> 10</div>
+            <div class="triad-item" title="Прогресс"><span class="triad-ic">📖</span> 7</div>
+            <div class="triad-item" title="Влияние"><span class="triad-ic">👥</span> 5</div>
+            <button class="snd-btn" title="Звук">🔔</button>
+          </div>
+        </div>
+
+        <div class="row-bottom">
+          <div class="risk-left">
+            <div class="mini-seal">🔥</div>
+            <span class="seal-title">Взор Инквизиции</span>
+          </div>
+          <div class="risk-right">
+            <span class="risk-pill">Подозрение</span>
+            <span class="risk-digits"><b>8</b> <span style="color:var(--text-faint);font-size:9.5px">/ 15</span></span>
+          </div>
+        </div>
+
+        <div class="tension-thread">
+          <div class="tension-fill"></div>
+        </div>
+      </div>
+
+      <div class="mock-scene-content">
+        <div class="mock-art-stub"></div>
+        <div class="mock-scene-title">Зал Капитула</div>
+        <p class="mock-scene-body">Тяжёлые нервюрные своды эхом отзываются на слова приора Гийома. Текст сцены виден полностью, шапка занимает минимум места, сохраняя сочный медальон.</p>
+      </div>
+    </div>
+
+    <div class="diff-specs">
+      <div class="spec-row"><span class="spec-label">Высота шапки:</span> <span class="spec-val" style="color:var(--sage)">66 px (минус 129 px!)</span></div>
+      <div class="spec-row"><span class="spec-label">Ресурсы:</span> <span class="spec-val">Четкие цифры и иконки</span></div>
+      <div class="spec-row"><span class="spec-label">Инквизиция:</span> <span class="spec-val">Круглая печать с аурой огня</span></div>
+    </div>
+  </div>
+
+
+  <!-- ================= ГИБРИД 2 ================= -->
+  <div id="card-hybrid-b" class="concept-card">
+    <div class="concept-badge">Гибрид 2 · Священный Триптих</div>
+    <div class="concept-meta">
+      <div class="concept-name">«Алтарь с Точными Числами»</div>
+      <div class="concept-tagline">Величественный центральный медальон Инквизиции из Варианта 2 + точные числовые показатели ресурсов из Варианта 1.</div>
+    </div>
+
+    <div class="mock-phone">
+      <div class="hud-hybrid-b">
+        <div class="chron-block">
+          <span class="year-big">1180</span>
+          <span class="turn-sub">Глава III · Х. 26</span>
+        </div>
+
+        <div class="medallion-wrap" title="Угроза Инквизиции: Подозрение (8/15)">
+          <div class="medallion">
+            <span class="med-flame">🔥</span>
+            <span class="med-num">8</span>
+          </div>
+          <span class="med-label">Подозрение</span>
+        </div>
+
+        <div class="stats-exact">
+          <div class="exact-group">
+            <div class="exact-row">
+              <span class="exact-item">👑 10</span>
+              <span class="exact-item">📖 7</span>
+            </div>
+            <div class="exact-row">
+              <span class="exact-item">👥 5</span>
+              <span style="font-size:11px;cursor:pointer;margin-left:3px">🔔</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tension-thread">
+          <div class="tension-fill"></div>
+        </div>
+      </div>
+
+      <div class="mock-scene-content">
+        <div class="mock-art-stub"></div>
+        <div class="mock-scene-title">Зал Капитула</div>
+        <p class="mock-scene-body">Тяжёлые нервюрные своды эхом отзываются на слова приора Гийома. Взгляд притягивает центр, но все ресурсы видны в точных цифрах.</p>
+      </div>
+    </div>
+
+    <div class="diff-specs">
+      <div class="spec-row"><span class="spec-label">Высота шапки:</span> <span class="spec-val">74 px</span></div>
+      <div class="spec-row"><span class="spec-label">Фокус:</span> <span class="spec-val">Большой медальон по центру</span></div>
+      <div class="spec-row"><span class="spec-label">Ресурсы:</span> <span class="spec-val">2 компактные строчки с цифрами</span></div>
+    </div>
+  </div>
+
+
+  <!-- ================= ГИБРИД 3 ================= -->
+  <div id="card-hybrid-c" class="concept-card">
+    <div class="concept-badge">Гибрид 3 · Reigns + Цифры</div>
+    <div class="concept-meta">
+      <div class="concept-name">«Живой Алтарь»</div>
+      <div class="concept-tagline">Физические вертикальные шкалы наполнения из Варианта 2, увенчанные точными цифрами ресурсов из Варианта 1.</div>
+    </div>
+
+    <div class="mock-phone">
+      <div class="hud-hybrid-c">
+        <div class="chron-block">
+          <span class="year-big">1180</span>
+          <span class="turn-sub">Глава III · Х. 26</span>
+        </div>
+
+        <div class="medallion-wrap" title="Угроза Инквизиции: Подозрение (8/15)">
+          <div class="medallion">
+            <span class="med-flame">🔥</span>
+            <span class="med-num">8</span>
+          </div>
+          <span class="med-label">Подозрение</span>
+        </div>
+
+        <div class="reigns-numbers">
+          <div class="rn-col" title="Процветание: 10/10">
+            <span class="rn-val">10</span>
+            <div class="rn-meter"><div class="rn-meter-fill" style="height:100%"></div></div>
+            <span class="rn-ic">👑</span>
+          </div>
+          <div class="rn-col" title="Прогресс: 7/10">
+            <span class="rn-val">7</span>
+            <div class="rn-meter"><div class="rn-meter-fill" style="height:70%"></div></div>
+            <span class="rn-ic">📖</span>
+          </div>
+          <div class="rn-col" title="Влияние: 5/10">
+            <span class="rn-val">5</span>
+            <div class="rn-meter"><div class="rn-meter-fill" style="height:50%"></div></div>
+            <span class="rn-ic">👥</span>
+          </div>
+          <span style="font-size:11px;margin-left:1px;cursor:pointer">🔔</span>
+        </div>
+
+        <div class="tension-thread">
+          <div class="tension-fill"></div>
+        </div>
+      </div>
+
+      <div class="mock-scene-content">
+        <div class="mock-art-stub"></div>
+        <div class="mock-scene-title">Зал Капитула</div>
+        <p class="mock-scene-body">Тяжёлые нервюрные своды эхом отзываются на слова приора Гийома. Столбики дают наглядную динамику, а цифры сверху исключают сомнения.</p>
+      </div>
+    </div>
+
+    <div class="diff-specs">
+      <div class="spec-row"><span class="spec-label">Высота шапки:</span> <span class="spec-val">76 px</span></div>
+      <div class="spec-row"><span class="spec-label">Ресурсы:</span> <span class="spec-val">Столбик + число сверху</span></div>
+      <div class="spec-row"><span class="spec-label">Баланс:</span> <span class="spec-val">Максимальная информативность</span></div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
