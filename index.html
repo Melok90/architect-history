@@ -3252,12 +3252,7 @@ function closePortraitDlg(){ $("portraitDlg").classList.remove("active"); }
 const AudioEngine = (function(){
   let ctx = null;
   let masterGain = null;
-  let droneGain = null;
-  let droneOscs = [];
-  let droneFilter = null;
-  let droneLfo = null;
   let isMuted = false;
-  let isDroneRunning = false;
   let currentChapterPrefix = null;
   let noiseBuffer = null;
 
@@ -3295,7 +3290,7 @@ const AudioEngine = (function(){
     if(icon) icon.textContent = isMuted ? "🔕" : "🔔";
     if(btn){
       btn.classList.toggle("muted", isMuted);
-      btn.title = isMuted ? "Звук обители выключен (нажмите, чтобы включить)" : "Звук обители включен (нажмите, чтобы выключить)";
+      btn.title = isMuted ? "Звуковые эффекты выключены (нажмите, чтобы включить)" : "Звуковые эффекты включены (нажмите, чтобы выключить)";
     }
   }
 
@@ -3306,11 +3301,8 @@ const AudioEngine = (function(){
     if(masterGain && c){
       masterGain.gain.setValueAtTime(isMuted ? 0 : 1, c.currentTime);
     }
-    if(isMuted){
-      stopDrone();
-    } else {
-      startDrone();
-      playBell(1.12, 0.3);
+    if(!isMuted){
+      playParchment();
     }
     updateUI();
   }
@@ -3450,67 +3442,9 @@ const AudioEngine = (function(){
     }
   }
 
-  /* 4. Низкий григорианский гул (ambient drone) */
-  function startDrone(){
-    if(isMuted || isDroneRunning) return;
-    const c = getContext();
-    if(!c) return;
-
-    const now = c.currentTime;
-
-    droneGain = c.createGain();
-    droneGain.gain.setValueAtTime(0.0001, now);
-    droneGain.gain.linearRampToValueAtTime(0.055, now + 2.5);
-    droneGain.connect(masterGain);
-
-    droneFilter = c.createBiquadFilter();
-    droneFilter.type = "lowpass";
-    droneFilter.frequency.setValueAtTime(260, now);
-    droneFilter.Q.setValueAtTime(2.0, now);
-    droneFilter.connect(droneGain);
-
-    droneLfo = c.createOscillator();
-    const lfoGain = c.createGain();
-    droneLfo.frequency.setValueAtTime(0.12, now);
-    lfoGain.gain.setValueAtTime(80, now);
-    droneLfo.connect(lfoGain);
-    lfoGain.connect(droneFilter.frequency);
-    droneLfo.start(now);
-
-    const pitches = [
-      { f: 65.41, type: "sawtooth", detune: -2, vol: 0.35 },
-      { f: 98.00, type: "sine", detune: 2, vol: 0.5 },
-      { f: 130.81, type: "sine", detune: -1, vol: 0.3 },
-      { f: 196.00, type: "sine", detune: 3, vol: 0.15 }
-    ];
-
-    droneOscs = pitches.map(p => {
-      const osc = c.createOscillator();
-      const g = c.createGain();
-      osc.type = p.type;
-      osc.frequency.setValueAtTime(p.f, now);
-      osc.detune.setValueAtTime(p.detune, now);
-      g.gain.setValueAtTime(p.vol, now);
-      osc.connect(g);
-      g.connect(droneFilter);
-      osc.start(now);
-      return osc;
-    });
-
-    isDroneRunning = true;
-  }
-
-  function stopDrone(){
-    if(!isDroneRunning || !droneGain || !ctx) return;
-    const now = ctx.currentTime;
-    droneGain.gain.linearRampToValueAtTime(0.0001, now + 1.2);
-    setTimeout(()=>{
-      droneOscs.forEach(o=>{ try{o.stop();}catch(e){} });
-      if(droneLfo){ try{droneLfo.stop();}catch(e){} }
-      droneOscs = [];
-      isDroneRunning = false;
-    }, 1300);
-  }
+  /* 4. Фоновая музыка отключена: оставлены только процедурные эффекты действий */
+  function startDrone(){}
+  function stopDrone(){}
 
   function onChapterEnter(chapTitle){
     if(!chapTitle) return;
@@ -3526,18 +3460,7 @@ const AudioEngine = (function(){
     }
   }
 
-  function onVisibilityChange(visible){
-    if(!ctx) return;
-    if(!visible){
-      if(droneGain && isDroneRunning){
-        droneGain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
-      }
-    } else {
-      if(!isMuted && isDroneRunning && droneGain){
-        droneGain.gain.linearRampToValueAtTime(0.055, ctx.currentTime + 1.0);
-      }
-    }
-  }
+  function onVisibilityChange(){}
 
   return {
     init,
@@ -3569,7 +3492,7 @@ window.addEventListener("keydown", e => {
 });
 
 document.addEventListener("visibilitychange", ()=>{
-  AudioEngine.onVisibilityChange(!document.hidden);
+  AudioEngine.onVisibilityChange();
 });
 
 /* ============ ДИАЛОГ / СТАРТ ============ */
@@ -3587,11 +3510,9 @@ function showPrologue(){
 }
 function startFromPrologue(){
   AudioEngine.playBell(1.0, 0.5);
-  AudioEngine.startDrone();
   newGame();
 }
 function newGame(){
-  AudioEngine.startDrone();
   S = newState();
   renderScene(S.sceneId);
 }
@@ -3599,12 +3520,10 @@ function continueGame(){
   const saved = loadSave();
   if(!saved) return showPrologue();
   AudioEngine.playBell(1.0, 0.45);
-  AudioEngine.startDrone();
   S = saved;
   renderScene(S.sceneId);
 }
 function restart(){
-  AudioEngine.stopDrone();
   clearSave();
   $("nav").style.display="";
   show("scr-title");
