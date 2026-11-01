@@ -165,6 +165,12 @@ svg.pix{shape-rendering:geometricPrecision;width:16px;height:16px;flex-shrink:0}
   flex:none;
 }
 .ghead-stats:hover{background:var(--surface-hi)}
+.ghead-right{display:inline-flex;align-items:center;gap:8px;flex:none}
+.ghead-sound-btn{background:transparent;border:1px solid rgba(183,154,86,.28);color:var(--gold);border-radius:4px;
+  cursor:pointer;padding:2px 6px;font-size:12px;line-height:1;display:inline-flex;align-items:center;
+  justify-content:center;transition:all .2s ease;user-select:none;box-sizing:border-box;min-height:24px}
+.ghead-sound-btn:hover{background:var(--surface-hi);border-color:var(--border-lit);transform:scale(1.08)}
+.ghead-sound-btn.muted{border-color:rgba(255,255,255,.08);color:var(--text-faint);opacity:.6;transform:none}
 .ghead-stat{
   position:relative;
   display:inline-flex;
@@ -903,25 +909,30 @@ nav button.on{color:var(--gold)}
           <span class="ghead-chapter-tag" id="hChapter">Глава I</span>
         </div>
 
-        <div class="ghead-stats" onclick="openPanel('p-char')" title="Открыть формуляр брата Луки">
-          <div class="ghead-stat" id="statProsperity" title="Процветание">
-            <span class="ic" data-ic="crown"></span>
-            <span class="ghead-stat-lbl">Проц.</span>
-            <span class="ghead-stat-val" id="vProsperity">0</span>
-            <span class="stat-delta" id="deltaProsperity"></span>
+        <div class="ghead-right">
+          <div class="ghead-stats" onclick="openPanel('p-char')" title="Открыть формуляр брата Луки">
+            <div class="ghead-stat" id="statProsperity" title="Процветание">
+              <span class="ic" data-ic="crown"></span>
+              <span class="ghead-stat-lbl">Проц.</span>
+              <span class="ghead-stat-val" id="vProsperity">0</span>
+              <span class="stat-delta" id="deltaProsperity"></span>
+            </div>
+            <div class="ghead-stat" id="statProgress" title="Прогресс">
+              <span class="ic" data-ic="book"></span>
+              <span class="ghead-stat-lbl">Прогр.</span>
+              <span class="ghead-stat-val" id="vProgress">0</span>
+              <span class="stat-delta" id="deltaProgress"></span>
+            </div>
+            <div class="ghead-stat" id="statInfluence" title="Влияние">
+              <span class="ic" data-ic="users"></span>
+              <span class="ghead-stat-lbl">Влиян.</span>
+              <span class="ghead-stat-val" id="hInf">0</span>
+              <span class="stat-delta" id="deltaInfluence"></span>
+            </div>
           </div>
-          <div class="ghead-stat" id="statProgress" title="Прогресс">
-            <span class="ic" data-ic="book"></span>
-            <span class="ghead-stat-lbl">Прогр.</span>
-            <span class="ghead-stat-val" id="vProgress">0</span>
-            <span class="stat-delta" id="deltaProgress"></span>
-          </div>
-          <div class="ghead-stat" id="statInfluence" title="Влияние">
-            <span class="ic" data-ic="users"></span>
-            <span class="ghead-stat-lbl">Влиян.</span>
-            <span class="ghead-stat-val" id="hInf">0</span>
-            <span class="stat-delta" id="deltaInfluence"></span>
-          </div>
+          <button class="ghead-sound-btn" id="sndToggle" onclick="AudioEngine.toggleSound()" title="Звук обители (вкл / выкл)" aria-label="Звук обители">
+            <span id="sndIcon">🔔</span>
+          </button>
         </div>
       </div>
 
@@ -2302,6 +2313,7 @@ function renderScene(id){
     S.unlockedLocations.add(sc.art);
   }
   checkAchievements(S);
+  if(sc && !sc.isRandomEvent && sc.chapterTitle) AudioEngine.onChapterEnter(sc.chapterTitle);
   closePanels(); renderHUD();
 
   if(sc.sliceEnd) return showSliceEnd(sc);
@@ -2367,6 +2379,7 @@ function renderScene(id){
     <span class="ctext">${ch.text}</span>`
     + (req.ok ? "" : `<div class="req"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS.lock}</svg><span>${req.msg}</span></div>`);
     if(req.ok) b.onclick=()=>{
+      AudioEngine.playQuill();
       box.style.pointerEvents="none";
       b.classList.add("sel");
       if(navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
@@ -2504,6 +2517,7 @@ function renderEcho(ch, deltas, rankUp, riskCalmed, dynamicLead){
 }
 
 function advanceFromEcho(){
+  AudioEngine.playParchment();
   const echoScreen = $("scr-echo");
   if(echoScreen) echoScreen.classList.add("dissolving-out");
   setTimeout(()=>{
@@ -2611,7 +2625,7 @@ function showSliceEnd(sc){
 }
 
 /* ============ ПАНЕЛИ ============ */
-function openPanel(id){ closePanels(); $(id).classList.add("active"); document.body.classList.add("lock"); $("nav").style.display="none"; renderPanel(id); }
+function openPanel(id){ AudioEngine.playParchment(); closePanels(); $(id).classList.add("active"); document.body.classList.add("lock"); $("nav").style.display="none"; renderPanel(id); }
 function closePanels(){ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active")); document.body.classList.remove("lock");
   if($("scr-game").classList.contains("active")) $("nav").style.display="block"; }
 function renderPanel(id){
@@ -3112,6 +3126,7 @@ function checkAchievements(st){
 let curCodexTab = "atlas";
 
 function switchCodexTab(tab){
+  AudioEngine.playParchment();
   curCodexTab = tab;
   const tabA = $("tabAtlas"), tabP = $("tabPersons");
   if(tabA && tabP){
@@ -3188,6 +3203,7 @@ function renderCodex(){
 }
 
 function openLocDlg(id){
+  AudioEngine.playParchment();
   const loc = CODEX_LOCATIONS.find(x=>x.id===id);
   if(!loc) return;
   const imgUrl = ART_IMG[loc.id] || "img/new_vers/art_abbey.jpg";
@@ -3201,6 +3217,7 @@ function openLocDlg(id){
 function closeLocDlg(){ $("locDlg").classList.remove("active"); }
 
 function openAchDlg(id){
+  AudioEngine.playParchment();
   const a = ACHIEVEMENTS.find(x=>x.id===id);
   if(!a) return;
   const isDone = S && S.achievements && S.achievements.has(a.id);
@@ -3215,6 +3232,7 @@ function openAchDlg(id){
 function closeAchDlg(){ $("achDlg").classList.remove("active"); }
 
 function openRelicDlg(id){
+  AudioEngine.playParchment();
   const r = HERO_RELICS.find(x=>x.id===id);
   if(!r) return;
   if($("relicDlgIcon")) $("relicDlgIcon").innerHTML = ICONS[r.ic] ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">${ICONS[r.ic]}</svg>` : "";
@@ -3227,8 +3245,313 @@ function openRelicDlg(id){
 }
 function closeRelicDlg(){ $("relicDlg").classList.remove("active"); }
 
-function openPortraitDlg(){ $("portraitDlg").classList.add("active"); }
+function openPortraitDlg(){ AudioEngine.playParchment(); $("portraitDlg").classList.add("active"); }
 function closePortraitDlg(){ $("portraitDlg").classList.remove("active"); }
+
+/* ==================== ПРОЦЕДУРНЫЙ АУДИО-ДВИЖОК ==================== */
+const AudioEngine = (function(){
+  let ctx = null;
+  let masterGain = null;
+  let droneGain = null;
+  let droneOscs = [];
+  let droneFilter = null;
+  let droneLfo = null;
+  let isMuted = false;
+  let isDroneRunning = false;
+  let currentChapterPrefix = null;
+  let noiseBuffer = null;
+
+  function getContext(){
+    if(!ctx){
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if(!AudioContextClass) return null;
+      ctx = new AudioContextClass();
+      masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(isMuted ? 0 : 1, ctx.currentTime);
+      masterGain.connect(ctx.destination);
+
+      const bufSize = Math.max(22050, ctx.sampleRate);
+      noiseBuffer = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for(let i = 0; i < bufSize; i++){
+        data[i] = (Math.random() * 2 - 1) * 0.5;
+      }
+    }
+    if(ctx.state === "suspended"){
+      ctx.resume().catch(()=>{});
+    }
+    return ctx;
+  }
+
+  function init(){
+    const saved = localStorage.getItem("arch_audio_enabled");
+    isMuted = (saved === "0");
+    updateUI();
+  }
+
+  function updateUI(){
+    const icon = $("sndIcon");
+    const btn = $("sndToggle");
+    if(icon) icon.textContent = isMuted ? "🔕" : "🔔";
+    if(btn){
+      btn.classList.toggle("muted", isMuted);
+      btn.title = isMuted ? "Звук обители выключен (нажмите, чтобы включить)" : "Звук обители включен (нажмите, чтобы выключить)";
+    }
+  }
+
+  function toggleSound(){
+    const c = getContext();
+    isMuted = !isMuted;
+    localStorage.setItem("arch_audio_enabled", isMuted ? "0" : "1");
+    if(masterGain && c){
+      masterGain.gain.setValueAtTime(isMuted ? 0 : 1, c.currentTime);
+    }
+    if(isMuted){
+      stopDrone();
+    } else {
+      startDrone();
+      playBell(1.12, 0.3);
+    }
+    updateUI();
+  }
+
+  /* 1. Глубокий колокол Сен-Дени (синтез гармоник) */
+  function playBell(pitchScale = 1.0, masterVol = 0.5){
+    if(isMuted) return;
+    const c = getContext();
+    if(!c) return;
+
+    const now = c.currentTime;
+    const baseFreq = 110 * pitchScale;
+
+    const harmonics = [
+      { mult: 0.5,  amp: 0.7,  decay: 4.8 },
+      { mult: 1.0,  amp: 1.0,  decay: 3.5 },
+      { mult: 1.19, amp: 0.65, decay: 2.8 },
+      { mult: 1.5,  amp: 0.5,  decay: 2.2 },
+      { mult: 2.0,  amp: 0.45, decay: 1.8 },
+      { mult: 2.75, amp: 0.25, decay: 1.2 },
+      { mult: 3.15, amp: 0.15, decay: 0.8 }
+    ];
+
+    const bellBus = c.createGain();
+    bellBus.gain.setValueAtTime(masterVol, now);
+    bellBus.connect(masterGain);
+
+    harmonics.forEach(h => {
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(baseFreq * h.mult, now);
+
+      gain.gain.setValueAtTime(h.amp, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + h.decay);
+
+      osc.connect(gain);
+      gain.connect(bellBus);
+
+      osc.start(now);
+      osc.stop(now + h.decay + 0.1);
+    });
+
+    if(noiseBuffer){
+      const strikeNoise = c.createBufferSource();
+      strikeNoise.buffer = noiseBuffer;
+      const strikeFilter = c.createBiquadFilter();
+      strikeFilter.type = "bandpass";
+      strikeFilter.frequency.setValueAtTime(1400, now);
+      strikeFilter.Q.setValueAtTime(3.0, now);
+
+      const strikeGain = c.createGain();
+      strikeGain.gain.setValueAtTime(0.35, now);
+      strikeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+
+      strikeNoise.connect(strikeFilter);
+      strikeFilter.connect(strikeGain);
+      strikeGain.connect(bellBus);
+
+      strikeNoise.start(now);
+      strikeNoise.stop(now + 0.1);
+    }
+  }
+
+  /* 2. Шуршание пергамента */
+  function playParchment(){
+    if(isMuted) return;
+    const c = getContext();
+    if(!c || !noiseBuffer) return;
+
+    const now = c.currentTime;
+    const noise = c.createBufferSource();
+    noise.buffer = noiseBuffer;
+
+    const filter = c.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(1600, now);
+    filter.frequency.exponentialRampToValueAtTime(800, now + 0.12);
+    filter.Q.setValueAtTime(1.2, now);
+
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.18, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+
+    noise.start(now);
+    noise.stop(now + 0.15);
+  }
+
+  /* 3. Щелчок пера / печать */
+  function playQuill(){
+    if(isMuted) return;
+    const c = getContext();
+    if(!c) return;
+
+    const now = c.currentTime;
+
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(1800, now);
+    osc.frequency.exponentialRampToValueAtTime(350, now + 0.035);
+
+    gain.gain.setValueAtTime(0.16, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+
+    osc.connect(gain);
+    gain.connect(masterGain);
+
+    osc.start(now);
+    osc.stop(now + 0.05);
+
+    if(noiseBuffer){
+      const noise = c.createBufferSource();
+      noise.buffer = noiseBuffer;
+      const nFilter = c.createBiquadFilter();
+      nFilter.type = "bandpass";
+      nFilter.frequency.setValueAtTime(2200, now);
+      nFilter.Q.setValueAtTime(2.0, now);
+
+      const nGain = c.createGain();
+      nGain.gain.setValueAtTime(0.09, now);
+      nGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+
+      noise.connect(nFilter);
+      nFilter.connect(nGain);
+      nGain.connect(masterGain);
+
+      noise.start(now);
+      noise.stop(now + 0.06);
+    }
+  }
+
+  /* 4. Низкий григорианский гул (ambient drone) */
+  function startDrone(){
+    if(isMuted || isDroneRunning) return;
+    const c = getContext();
+    if(!c) return;
+
+    const now = c.currentTime;
+
+    droneGain = c.createGain();
+    droneGain.gain.setValueAtTime(0.0001, now);
+    droneGain.gain.linearRampToValueAtTime(0.055, now + 2.5);
+    droneGain.connect(masterGain);
+
+    droneFilter = c.createBiquadFilter();
+    droneFilter.type = "lowpass";
+    droneFilter.frequency.setValueAtTime(260, now);
+    droneFilter.Q.setValueAtTime(2.0, now);
+    droneFilter.connect(droneGain);
+
+    droneLfo = c.createOscillator();
+    const lfoGain = c.createGain();
+    droneLfo.frequency.setValueAtTime(0.12, now);
+    lfoGain.gain.setValueAtTime(80, now);
+    droneLfo.connect(lfoGain);
+    lfoGain.connect(droneFilter.frequency);
+    droneLfo.start(now);
+
+    const pitches = [
+      { f: 65.41, type: "sawtooth", detune: -2, vol: 0.35 },
+      { f: 98.00, type: "sine", detune: 2, vol: 0.5 },
+      { f: 130.81, type: "sine", detune: -1, vol: 0.3 },
+      { f: 196.00, type: "sine", detune: 3, vol: 0.15 }
+    ];
+
+    droneOscs = pitches.map(p => {
+      const osc = c.createOscillator();
+      const g = c.createGain();
+      osc.type = p.type;
+      osc.frequency.setValueAtTime(p.f, now);
+      osc.detune.setValueAtTime(p.detune, now);
+      g.gain.setValueAtTime(p.vol, now);
+      osc.connect(g);
+      g.connect(droneFilter);
+      osc.start(now);
+      return osc;
+    });
+
+    isDroneRunning = true;
+  }
+
+  function stopDrone(){
+    if(!isDroneRunning || !droneGain || !ctx) return;
+    const now = ctx.currentTime;
+    droneGain.gain.linearRampToValueAtTime(0.0001, now + 1.2);
+    setTimeout(()=>{
+      droneOscs.forEach(o=>{ try{o.stop();}catch(e){} });
+      if(droneLfo){ try{droneLfo.stop();}catch(e){} }
+      droneOscs = [];
+      isDroneRunning = false;
+    }, 1300);
+  }
+
+  function onChapterEnter(chapTitle){
+    if(!chapTitle) return;
+    const prefix = chapTitle.split(" — ")[0].trim();
+    if(!prefix) return;
+    if(currentChapterPrefix === null){
+      currentChapterPrefix = prefix;
+      return;
+    }
+    if(prefix !== currentChapterPrefix){
+      currentChapterPrefix = prefix;
+      playBell(0.92, 0.55);
+    }
+  }
+
+  function onVisibilityChange(visible){
+    if(!ctx) return;
+    if(!visible){
+      if(droneGain && isDroneRunning){
+        droneGain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+      }
+    } else {
+      if(!isMuted && isDroneRunning && droneGain){
+        droneGain.gain.linearRampToValueAtTime(0.055, ctx.currentTime + 1.0);
+      }
+    }
+  }
+
+  return {
+    init,
+    getContext,
+    toggleSound,
+    playBell,
+    playParchment,
+    playQuill,
+    startDrone,
+    stopDrone,
+    onChapterEnter,
+    onVisibilityChange
+  };
+})();
 
 window.addEventListener("keydown", e => {
   if(e.key === "Escape"){
@@ -3242,6 +3565,11 @@ window.addEventListener("keydown", e => {
   if(e.key === "l" || e.key === "д") openPanel('p-chron');
   if(e.key === "h" || e.key === "р") openPanel('p-char');
   if(e.key === "c" || e.key === "с") openPanel('p-codex');
+  if(e.key === "m" || e.key === "ь") AudioEngine.toggleSound();
+});
+
+document.addEventListener("visibilitychange", ()=>{
+  AudioEngine.onVisibilityChange(!document.hidden);
 });
 
 /* ============ ДИАЛОГ / СТАРТ ============ */
@@ -3258,15 +3586,30 @@ function showPrologue(){
   show("scr-prologue");
 }
 function startFromPrologue(){
+  AudioEngine.playBell(1.0, 0.5);
+  AudioEngine.startDrone();
   newGame();
 }
-function newGame(){ S = newState(); renderScene(S.sceneId); }
+function newGame(){
+  AudioEngine.startDrone();
+  S = newState();
+  renderScene(S.sceneId);
+}
 function continueGame(){
   const saved = loadSave();
   if(!saved) return showPrologue();
-  S = saved; renderScene(S.sceneId);
+  AudioEngine.playBell(1.0, 0.45);
+  AudioEngine.startDrone();
+  S = saved;
+  renderScene(S.sceneId);
 }
-function restart(){ clearSave(); $("nav").style.display=""; show("scr-title"); checkContinue(); }
+function restart(){
+  AudioEngine.stopDrone();
+  clearSave();
+  $("nav").style.display="";
+  show("scr-title");
+  checkContinue();
+}
 function checkContinue(){
   const saved = loadSave();
   const btn = $("btnContinue");
@@ -3279,6 +3622,7 @@ function checkContinue(){
   }
 }
 checkContinue();
+AudioEngine.init();
 </script>
 </body>
 </html>
