@@ -751,15 +751,38 @@ nav button.on{color:var(--gold)}
 .portrait-dlg-frame{width:160px;height:160px;margin:0 auto;border-radius:8px;border:2px solid var(--gold);outline:3px solid rgba(183,154,86,.25);outline-offset:3px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.6)}
 .portrait-dlg-img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.05) sepia(.08)}
 
+.char-section-head-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;margin-bottom:2px}
 .char-section-title{font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-top:4px}
+.char-section-head-row .char-section-title{margin-top:0}
+.char-info-btn{background:rgba(183,154,86,.08);border:1px solid rgba(183,154,86,.28);color:var(--gold);border-radius:4px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 8px;display:inline-flex;align-items:center;gap:4.5px;cursor:pointer;transition:all .18s;line-height:1}
+.char-info-btn:hover{background:rgba(183,154,86,.18);border-color:var(--gold-bright);color:var(--gold-bright);transform:scale(1.03)}
+.char-info-btn svg{color:var(--gold-bright);width:12px;height:12px}
+
 .char-stats-card, .char-risk-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;flex-direction:column;gap:10px}
 .char-stats-card .statrow{padding:8px 0;border-bottom:1px solid var(--border-soft)}
 .char-stats-card .statrow:last-child{border-bottom:none;padding-bottom:0}
 .char-stats-card .statrow:first-child{padding-top:0}
+.char-stats-card .statrow.clickable{cursor:pointer;border-radius:4px;padding:8px 8px;margin:0 -8px;transition:background .18s}
+.char-stats-card .statrow.clickable:hover{background:rgba(255,255,255,.035)}
 .sl-title{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);line-height:1}
 .sl-title .ic{width:12px;height:12px;color:var(--text-faint)}
 .sl-val{font-family:'Spectral',Georgia,serif;font-size:14px;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums}
 .char-risk-note{font-size:12px;color:var(--text-faint);font-style:italic;line-height:1.4;margin-top:2px}
+
+/* Модальное окно справки по показателям */
+.stats-info-dlg-box{max-width:390px;text-align:left;padding:22px 20px;max-height:86vh;overflow-y:auto}
+.stats-info-list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.stat-info-card{background:rgba(255,255,255,.025);border:1px solid var(--border-soft);border-radius:6px;padding:10px 12px;transition:border-color .2s}
+.stat-info-card:hover{border-color:rgba(183,154,86,.3)}
+.stat-info-card.stat-info-risk{background:rgba(224,83,76,.06);border-color:rgba(224,83,76,.28)}
+.stat-info-head{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.stat-info-ic{font-size:13px;line-height:1}
+.stat-info-name{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text);flex:1}
+.stat-info-scale{font-family:'IBM Plex Sans',sans-serif;font-size:9px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase}
+.stat-info-desc{font-family:'Spectral',Georgia,serif;font-size:12.5px;color:var(--text-dim);line-height:1.45}
+.stat-info-desc i{color:var(--gold);font-style:normal;font-size:11.5px;display:block;margin-top:3px}
 
 .char-traits-box{display:flex;flex-direction:column;gap:8px}
 .char-trait-item{background:var(--surface);border:1px solid var(--border-soft);border-radius:6px;padding:10px 14px}
@@ -1171,6 +1194,74 @@ nav button.on{color:var(--gold)}
       <div class="relic-dlg-quote" id="achDlgQuote">«Цитата хроники»</div>
       <div class="dbtns">
         <button class="ok" onclick="closeAchDlg()">Скрыть свиток</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно справки по показателям -->
+  <div class="dlgwrap" id="statsInfoDlg" onclick="if(event.target===this)closeStatsInfoDlg()">
+    <div class="dlg stats-info-dlg-box">
+      <div class="relic-dlg-top">
+        <div class="relic-dlg-icon" style="background:rgba(201,169,98,.12);border-color:rgba(201,169,98,.3);color:var(--gold-bright)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+          </svg>
+        </div>
+        <div class="relic-dlg-badge">Свод правил обители</div>
+      </div>
+      <div class="dt" style="font-size:18px;margin-bottom:2px">Показатели обители</div>
+      <div class="relic-dlg-sub" style="margin-bottom:14px">Как твои решения меняют мир Сен-Дени</div>
+
+      <div class="stats-info-list">
+        <div class="stat-info-card">
+          <div class="stat-info-head">
+            <span class="stat-info-ic">👑</span>
+            <span class="stat-info-name">Процветание</span>
+            <span class="stat-info-scale">от 0 до 10</span>
+          </div>
+          <div class="stat-info-desc">Здоровье братии, сытость крестьян, чистота воды и гигиена в лазарете. Высокий уровень защищает от мора, повальной лихорадки и бунтов.</div>
+        </div>
+
+        <div class="stat-info-card">
+          <div class="stat-info-head">
+            <span class="stat-info-ic">📖</span>
+            <span class="stat-info-name">Прогресс и знания</span>
+            <span class="stat-info-scale">от 0 до 10</span>
+          </div>
+          <div class="stat-info-desc">Инженерные новшества, водяные механизмы, селекция трав, трехполье и натурфилософия будущего. Открывает дерзкие строительные и научные пути.</div>
+        </div>
+
+        <div class="stat-info-card">
+          <div class="stat-info-head">
+            <span class="stat-info-ic">👥</span>
+            <span class="stat-info-name">Отношение Церкви</span>
+            <span class="stat-info-scale">от 0 до 10</span>
+          </div>
+          <div class="stat-info-desc">Доверие аббата Одона, приора Гийома и бенедиктинцев к брату Луке. Служит духовным щитом и защищает от наветов завистливых монахов.</div>
+        </div>
+
+        <div class="stat-info-card">
+          <div class="stat-info-head">
+            <span class="stat-info-ic">🪙</span>
+            <span class="stat-info-name">Монастырская Казна</span>
+            <span class="stat-info-scale">от 0 до 10</span>
+          </div>
+          <div class="stat-info-desc">Золотой запас аббатства. Позволяет выкупать права на землю, нанимать лучших мастеров и оплачивать стройки.<i>Открывается с рангом «Советник».</i></div>
+        </div>
+
+        <div class="stat-info-card stat-info-risk">
+          <div class="stat-info-head">
+            <span class="stat-info-ic">🔥</span>
+            <span class="stat-info-name" style="color:var(--risk-amber)">Взор Инквизиции</span>
+            <span class="stat-info-scale" style="color:var(--risk-amber)">предел 15</span>
+          </div>
+          <div class="stat-info-desc">Внимание папских легатов к «чудесам» Луки. Каждое смелое решение привлекает след. Если подозрение достигнет 15 — дознание и костёр неизбежны!</div>
+        </div>
+      </div>
+
+      <div class="dbtns" style="margin-top:16px">
+        <button class="ok" onclick="closeStatsInfoDlg()">Понятно</button>
       </div>
     </div>
   </div>
@@ -2695,7 +2786,7 @@ function showSliceEnd(sc){
 }
 
 /* ============ ПАНЕЛИ ============ */
-function openPanel(id){ AudioEngine.playParchment(); closePanels(); $(id).classList.add("active"); document.body.classList.add("lock"); $("nav").style.display="none"; renderPanel(id); }
+function openPanel(id){ AudioEngine.playParchment(); closePanels(); const el = $(id); el.classList.add("active"); document.body.classList.add("lock"); $("nav").style.display="none"; renderPanel(id); el.scrollTop = 0; }
 function closePanels(){ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active")); document.body.classList.remove("lock");
   if($("scr-game").classList.contains("active")) $("nav").style.display="block"; }
 function renderPanel(id){
@@ -2781,6 +2872,63 @@ function renderPanel(id){
           </div>
         </div>
 
+        <!-- Монастырские показатели -->
+        <div class="char-section-head-row">
+          <div class="char-section-title">Состояние обители</div>
+          <button class="char-info-btn" onclick="openStatsInfoDlg()" title="Что значат эти показатели?">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4M12 8h.01"/>
+            </svg>
+            <span>Справка</span>
+          </button>
+        </div>
+        <div class="char-stats-card">
+          <div class="statrow clickable" onclick="openStatsInfoDlg()" title="Нажмите, чтобы узнать подробнее о процветании">
+            <div class="statline">
+              <span class="sl-title"><span class="ic" data-ic="crown"></span>Процветание</span>
+              <span class="sl-val">${S.stats.prosperity} / 10</span>
+            </div>
+            <div class="statbar-track"><div class="statbar-fill" style="width:${S.stats.prosperity*10}%;background:var(--sage)"></div></div>
+          </div>
+
+          <div class="statrow clickable" onclick="openStatsInfoDlg()" title="Нажмите, чтобы узнать подробнее о прогрессе">
+            <div class="statline">
+              <span class="sl-title"><span class="ic" data-ic="book"></span>Прогресс и знания</span>
+              <span class="sl-val">${S.stats.progress} / 10</span>
+            </div>
+            <div class="statbar-track"><div class="statbar-fill" style="width:${S.stats.progress*10}%;background:var(--gold)"></div></div>
+          </div>
+
+          <div class="statrow clickable" onclick="openStatsInfoDlg()" title="Нажмите, чтобы узнать подробнее об отношении Церкви">
+            <div class="statline">
+              <span class="sl-title"><span class="ic" data-ic="users"></span>Отношение Церкви</span>
+              <span class="sl-val">${S.stats.church} / 10</span>
+            </div>
+            <div class="statbar-track"><div class="statbar-fill" style="width:${S.stats.church*10}%;background:var(--sage)"></div></div>
+          </div>
+
+          <div class="statrow clickable" onclick="openStatsInfoDlg()" title="Нажмите, чтобы узнать подробнее о казне">
+            <div class="statline">
+              <span class="sl-title"><span class="ic" data-ic="coin"></span>Казна</span>
+              <span class="sl-val">${S.treasuryUnlocked ? `${S.stats.treasury} / 10` : "Заблокирована"}</span>
+            </div>
+            <div class="statbar-track"><div class="statbar-fill" style="width:${S.treasuryUnlocked ? S.stats.treasury*10 : 0}%;background:var(--gold)"></div></div>
+            ${S.treasuryUnlocked ? "" : `<div class="statnote">Открывается с рангом «Советник»</div>`}
+          </div>
+        </div>
+
+        <!-- Взор Инквизиции -->
+        <div class="char-section-title">Взор Инквизиции</div>
+        <div class="char-risk-card" style="border-color:${rSt.badgeBorder};cursor:pointer" onclick="openStatsInfoDlg()" title="Нажмите, чтобы узнать подробнее об инквизиции">
+          <div class="statline">
+            <span class="sl-title"><span class="ic" data-ic="flame"></span>Уровень угрозы</span>
+            <span class="sl-val" style="color:var(${rSt.colorVar})">${S.risk} / 15 — ${rSt.label}</span>
+          </div>
+          <div class="statbar-track"><div class="statbar-fill" style="width:${Math.max(S.risk/15*100, 2)}%;background:var(${rSt.fillVar})"></div></div>
+          <div class="char-risk-note">${S.risk >= 12 ? "Инквизиторские дознаватели уже близко. Любое неосторожное слово приведёт к костру." : "Пока подозрение не привлекло Святую Палату. Соблюдай осторожность."}</div>
+        </div>
+
         <!-- Обет и тайна пришельца -->
         <div class="char-section-title">Обет и тайна пришельца</div>
         <div class="char-origin-card">
@@ -2838,54 +2986,6 @@ function renderPanel(id){
               </div>
             `;
           }).join("")}
-        </div>
-
-        <!-- Монастырские показатели -->
-        <div class="char-section-title">Состояние обители</div>
-        <div class="char-stats-card">
-          <div class="statrow">
-            <div class="statline">
-              <span class="sl-title"><span class="ic" data-ic="crown"></span>Процветание</span>
-              <span class="sl-val">${S.stats.prosperity} / 10</span>
-            </div>
-            <div class="statbar-track"><div class="statbar-fill" style="width:${S.stats.prosperity*10}%;background:var(--sage)"></div></div>
-          </div>
-
-          <div class="statrow">
-            <div class="statline">
-              <span class="sl-title"><span class="ic" data-ic="book"></span>Прогресс и знания</span>
-              <span class="sl-val">${S.stats.progress} / 10</span>
-            </div>
-            <div class="statbar-track"><div class="statbar-fill" style="width:${S.stats.progress*10}%;background:var(--gold)"></div></div>
-          </div>
-
-          <div class="statrow">
-            <div class="statline">
-              <span class="sl-title"><span class="ic" data-ic="users"></span>Отношение Церкви</span>
-              <span class="sl-val">${S.stats.church} / 10</span>
-            </div>
-            <div class="statbar-track"><div class="statbar-fill" style="width:${S.stats.church*10}%;background:var(--sage)"></div></div>
-          </div>
-
-          <div class="statrow">
-            <div class="statline">
-              <span class="sl-title"><span class="ic" data-ic="coin"></span>Казна</span>
-              <span class="sl-val">${S.treasuryUnlocked ? `${S.stats.treasury} / 10` : "Заблокирована"}</span>
-            </div>
-            <div class="statbar-track"><div class="statbar-fill" style="width:${S.treasuryUnlocked ? S.stats.treasury*10 : 0}%;background:var(--gold)"></div></div>
-            ${S.treasuryUnlocked ? "" : `<div class="statnote">Открывается с рангом «Советник»</div>`}
-          </div>
-        </div>
-
-        <!-- Взор Инквизиции -->
-        <div class="char-section-title">Взор Инквизиции</div>
-        <div class="char-risk-card" style="border-color:${rSt.badgeBorder}">
-          <div class="statline">
-            <span class="sl-title"><span class="ic" data-ic="flame"></span>Уровень угрозы</span>
-            <span class="sl-val" style="color:var(${rSt.colorVar})">${S.risk} / 15 — ${rSt.label}</span>
-          </div>
-          <div class="statbar-track"><div class="statbar-fill" style="width:${Math.max(S.risk/15*100, 2)}%;background:var(${rSt.fillVar})"></div></div>
-          <div class="char-risk-note">${S.risk >= 12 ? "Инквизиторские дознаватели уже близко. Любое неосторожное слово приведёт к костру." : "Пока подозрение не привлекло Святую Палату. Соблюдай осторожность."}</div>
         </div>
 
         <!-- След в истории (Флаги) -->
@@ -3317,6 +3417,9 @@ function closeRelicDlg(){ $("relicDlg").classList.remove("active"); }
 
 function openPortraitDlg(){ AudioEngine.playParchment(); $("portraitDlg").classList.add("active"); }
 function closePortraitDlg(){ $("portraitDlg").classList.remove("active"); }
+
+function openStatsInfoDlg(){ AudioEngine.playParchment(); $("statsInfoDlg").classList.add("active"); }
+function closeStatsInfoDlg(){ $("statsInfoDlg").classList.remove("active"); }
 
 /* ==================== ПРОЦЕДУРНЫЙ АУДИО-ДВИЖОК ==================== */
 const AudioEngine = (function(){
