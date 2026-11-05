@@ -882,21 +882,56 @@ nav button.on{color:var(--gold)}
 .codex-loc-card.locked-card{opacity:.65;filter:grayscale(60%)}
 .codex-loc-card.locked-card:hover{opacity:1;filter:none}
 
-.codex-person-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:15px;
-  display:flex;flex-direction:column;gap:10px;margin-bottom:12px;transition:border-color .2s}
-.codex-person-card:hover{border-color:rgba(183,154,86,.3)}
-.codex-person-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.codex-person-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:14px;
+  display:flex;flex-direction:column;gap:10px;margin-bottom:12px;transition:all .2s;cursor:pointer}
+.codex-person-card:hover{border-color:rgba(183,154,86,.4);background:var(--surface-hi)}
+.codex-person-top{display:flex;align-items:flex-start;gap:12px}
+.codex-person-avatar-frame{
+  width:64px;
+  height:64px;
+  border-radius:8px;
+  overflow:hidden;
+  border:1px solid var(--border-lit);
+  background:#080C0A;
+  flex:none;
+  position:relative;
+  box-shadow:0 3px 10px rgba(0,0,0,.5);
+  transition:transform .2s, border-color .2s;
+}
+.codex-person-card:hover .codex-person-avatar-frame{
+  transform:scale(1.04);
+  border-color:var(--gold);
+}
+.codex-person-avatar{width:100%;height:100%;object-fit:cover;display:block}
+.codex-person-zoom-hint{
+  position:absolute;bottom:2px;right:2px;
+  background:rgba(0,0,0,.75);border-radius:3px;
+  width:16px;height:16px;color:var(--gold-bright);display:flex;align-items:center;justify-content:center;
+  opacity:.8;transition:opacity .2s;
+}
+.codex-person-zoom-hint svg{width:10px;height:10px}
+.codex-person-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.codex-person-order{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;color:var(--text-faint);line-height:1.2}
+.codex-person-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .codex-person-meta{display:flex;flex-direction:column;gap:2px}
-.codex-person-name{font-family:'Spectral',Georgia,serif;font-size:17px;font-weight:600;color:var(--text);line-height:1.2}
-.codex-person-title{font-family:'IBM Plex Sans',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint)}
+.codex-person-name{font-family:'Spectral',Georgia,serif;font-size:16.5px;font-weight:600;color:var(--text);line-height:1.2}
+.codex-person-title{font-family:'IBM Plex Sans',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-dim);line-height:1.3}
 .codex-person-badge{font-family:'IBM Plex Sans',sans-serif;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-  padding:3px 8px;border-radius:4px;border:1px solid;white-space:nowrap}
+  padding:3px 8px;border-radius:4px;border:1px solid;white-space:nowrap;flex:none}
 .codex-person-badge.ally{background:rgba(163,188,148,.12);border-color:rgba(163,188,148,.3);color:var(--sage)}
 .codex-person-badge.neutral{background:rgba(183,154,86,.12);border-color:rgba(183,154,86,.3);color:var(--gold-bright)}
 .codex-person-badge.threat{background:rgba(192,115,109,.15);border-color:rgba(192,115,109,.35);color:var(--burgundy)}
+.codex-person-badge.hero{background:rgba(183,154,86,.18);border-color:rgba(183,154,86,.45);color:var(--gold-bright)}
 .codex-person-desc{font-family:'Spectral',Georgia,serif;font-size:13.5px;color:var(--text-dim);line-height:1.55}
 .codex-person-quote{font-family:'Spectral',Georgia,serif;font-size:12.5px;font-style:italic;color:var(--gold);
   background:rgba(183,154,86,.05);border-left:2px solid var(--gold);padding:7px 10px;border-radius:4px;line-height:1.45}
+.codex-person-relation{font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--text-faint);display:flex;align-items:center;gap:6px}
+.codex-person-relation strong{color:var(--text-dim);font-weight:600}
+
+.person-dlg-box{max-width:390px;text-align:left;padding:18px 18px 20px}
+.person-dlg-frame{width:100%;height:260px;border-radius:8px;overflow:hidden;border:1px solid var(--border-lit);position:relative;margin-bottom:12px;background:#060A08;box-shadow:0 4px 18px rgba(0,0,0,.6)}
+.person-dlg-img{width:100%;height:100%;object-fit:cover;display:block}
+.person-dlg-top{display:flex;align-items:center;justify-content:flex-start}
 
 .loc-dlg-box{max-width:390px;text-align:left;padding:18px 18px 20px}
 .loc-dlg-art{width:100%;height:180px;border-radius:8px;overflow:hidden;border:1px solid var(--border-lit);position:relative;margin-bottom:12px;background:#000}
@@ -1214,13 +1249,37 @@ nav button.on{color:var(--gold)}
   <div class="dlgwrap" id="portraitDlg" onclick="if(event.target===this)closePortraitDlg()">
     <div class="dlg portrait-dlg-box">
       <div class="portrait-dlg-frame">
-        <img src="img/new_vers/art_luke.jpg" alt="Брат Лука" class="portrait-dlg-img">
+        <img src="img/characters/character_luca.jpg" alt="Брат Лука" class="portrait-dlg-img">
       </div>
       <div class="dt" style="margin-top:14px;font-size:18px">Брат Лука из Пикардии</div>
       <div class="relic-dlg-sub" style="margin-bottom:10px">1180 г. от Р.Х. · Орден св. Бенедикта</div>
       <div class="dm" style="font-size:12.5px;line-height:1.5;margin-bottom:16px;text-align:center">«Взор устремлён сквозь века. В руках — перо переписчика и травы лазарета, в разуме — чертежи грядущего мира.»</div>
       <div class="dbtns">
         <button class="ok" onclick="closePortraitDlg()">Вернуться</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно досье персонажа -->
+  <div class="dlgwrap" id="personDlg" onclick="if(event.target===this)closePersonDlg()">
+    <div class="dlg person-dlg-box">
+      <div class="person-dlg-frame">
+        <img id="personDlgImg" src="img/characters/character_odon.jpg" alt="" class="person-dlg-img">
+      </div>
+      <div class="person-dlg-top">
+        <span class="codex-person-badge ally" id="personDlgBadge">Покровитель</span>
+      </div>
+      <div class="dt" id="personDlgName" style="margin-top:10px;font-size:20px;text-align:left">Аббат Одон</div>
+      <div class="relic-dlg-sub" id="personDlgTitle" style="margin-bottom:3px;text-align:left">Настоятель королевского аббатства Сен-Дени</div>
+      <div class="codex-loc-tag" id="personDlgOrder" style="margin-bottom:12px;color:var(--gold);text-align:left">Орден св. Бенедикта · Преемник Сугерия</div>
+      <div class="dm" id="personDlgDesc" style="font-size:13px;line-height:1.55;margin-bottom:12px;text-align:left">Описание</div>
+      <div class="relic-dlg-quote" id="personDlgQuote" style="margin-bottom:12px">«Цитата»</div>
+      <div class="codex-person-relation" id="personDlgRelation" style="margin-top:8px">
+        <span class="ic" data-ic="sparkle"></span>
+        <span id="personDlgRelText"><strong>Отношение к Луке:</strong> Опирается на твою мудрость</span>
+      </div>
+      <div class="dbtns" style="margin-top:16px">
+        <button class="ok" onclick="closePersonDlg()">Вернуться в кодекс</button>
       </div>
     </div>
   </div>
@@ -2215,7 +2274,13 @@ const ART_BRIEF = {
 };
 /* готовые изображения — по мере генерации остальных просто добавляй пары id:файл сюда */
 const ART_IMG = {
-  luke:"img/new_vers/art_luke.jpg",
+  luke:"img/characters/character_luca.jpg",
+  odon:"img/characters/character_odon.jpg",
+  guillaume:"img/characters/character_guillaume.jpg",
+  thomas:"img/characters/character_thomas.jpg",
+  toma:"img/characters/character_thomas.jpg",
+  simon:"img/characters/character_simon.jpg",
+  raymond:"img/characters/character_raymond.jpg",
   abbey:"img/new_vers/art_abbey.jpg",
   cell:"img/new_vers/art_cell.jpg",
   scriptorium:"img/new_vers/art_scriptorium.jpg",
@@ -3233,7 +3298,8 @@ const CODEX_CHARACTERS = [
     order: "Орден св. Бенедикта · Преемник Сугерия",
     badge: "Покровитель",
     badgeType: "ally",
-    desc: "Глава монастыря, дипломат и придворный политик. Лавирует между королём Филиппом II и Папским престолом. Оценивает Луку по плодам: пока реформы приносят авторитет и доход обители, аббат готов прикрывать брата своей мантией.",
+    img: "img/characters/character_odon.jpg",
+    desc: "Настоятель аббатства Сен-Дени. Властный монах с крестом на груди, сидит в кресле настоятеля. Лавирует между королём Филиппом II и Папским престолом. Оценивает Луку по плодам: пока реформы приносят авторитет и доход обители, готов прикрывать брата своей мантией.",
     quote: "«Монастырь держится не только истовой молитвой, но и порядком в книгах. Не ссорь меня с Римом, и Сен-Дени встанет за тебя горой.»",
     relation: "Опирается на твою мудрость в переговорах с короной"
   },
@@ -3241,21 +3307,23 @@ const CODEX_CHARACTERS = [
     id: "guillaume",
     name: "Приор Гийом",
     title: "Старейшина капитула и главный лекарь",
-    order: "Хранитель Устава св. Бенедикта",
+    order: "Хранитель Устава св. Бенедикта · Аптека обители",
     badge: "Хранитель канона",
     badgeType: "neutral",
-    desc: "Консервативный старейшина, отдавший сорок лет лазарету и молитвам. Верит в очистительное кровопускание и промысел Божий. Смотрит на научные методы Луки с подозрением, но искренне радуется исцелению каждого послушника.",
+    img: "img/characters/character_guillaume.jpg",
+    desc: "Старейшина капитула и главный лекарь. Изучает лекарственные травы в монастырской аптеке среди сушеных пучков и ступок. Консервативен, но искренне радуется исцелению каждого послушника без вредоносных кровопусканий.",
     quote: "«Господь посылает хвори для очищения духа, а не для гордыни ума. Но если твоя кипячёная вода спасла людей — я не стану свидетельствовать против тебя.»",
     relation: "Внимательно наблюдает за каждым твоим шагом"
   },
   {
-    id: "toma",
+    id: "thomas",
     name: "Послушник Тома",
     title: "Младший писец и чертёжник",
     order: "Ученик Луки · Скрипторий Сен-Дени",
     badge: "Верный ученик",
     badgeType: "ally",
-    desc: "Юноша с живым аналитическим умом. Лука обучил его арабским цифрам, геометрическим проекциям и основам механики. Тома бесстрашно прячет тайные чертежи в лапидарии и готов свидетельствовать за наставника перед любым трибуналом.",
+    img: "img/characters/character_thomas.jpg",
+    desc: "Младший писец и чертёжник. Держит чертёж водяной мельницы, овладел арабскими цифрами и геометрическими проекциями. Верный ученик Луки, готовый свидетельствовать за наставника перед любым трибуналом.",
     quote: "«Брат Лука, я закончил чертёж привода мельницы в трёх проекциях, как вы учили! Ни один каноник не догадается, что за этими линиями.»",
     relation: "Преданно хранит тайну твоих записей"
   },
@@ -3266,20 +3334,34 @@ const CODEX_CHARACTERS = [
     order: "Деревня у стен Сен-Дени",
     badge: "Голос земли",
     badgeType: "ally",
-    desc: "Суровый, немногословный пахарь, привыкший к капризам природы и феодальным поборам. Поначалу насторожен к монашеским новшествам, но, увидев двойной урожай и чистый колодец, становится преданнейшим союзником Луки среди мирян.",
+    img: "img/characters/character_simon.jpg",
+    desc: "Выборный староста крестьянской общины. Крепкий бородатый мужчина с посохом на фоне деревенских изб. Голос земли. Увидев двойной урожай трёхполья и спасённых от мора детей, стал преданнейшим союзником Луки среди мирян.",
     quote: "«Земля не слушает латинских молитв, брат. Земля любит умные руки. Твой клевер спас моих ребятишек от голодной зимы, и деревня этого не забудет.»",
     relation: "Защитит тебя от гнева сеньора и бунта толпы"
   },
   {
-    id: "raimund",
+    id: "raymond",
     name: "Брат Раймунд",
     title: "Визитатор Святого Престола",
     order: "Папская курия · Римский эмиссар",
-    badge: "Взор Инквизиции",
+    badge: "Взор инквизиции",
     badgeType: "threat",
-    desc: "Блестяще образованный римский богослов с холодным, проницательным взором. Прибыл в Сен-Дени расследовать слухи о «чудесных исцелениях» и дерзких чертежах. В любом рациональном знании ищет козни дьявола или смертный грех гордыни.",
+    img: "img/characters/character_raymond.jpg",
+    desc: "Визитатор Святого престола. Строгий церковный представитель с документами, папскими печатями и крестом. Взор инквизиции. Прибыл в Сен-Дени расследовать слухи о «чудесных исцелениях» и в любом рациональном новшестве ищет грех гордыни.",
     quote: "«Знание без смирения есть семя падения Люцифера. Ты говоришь о невидимых глазу причинах хвори, брат Лука... Не лукавый ли нашёптывает их тебе в ночи?»",
     relation: "Готовит досье для папского трибунала"
+  },
+  {
+    id: "luca",
+    name: "Брат Лука из Пикардии",
+    title: "Монах-исследователь и прогрессор",
+    order: "Орден св. Бенедикта · Сен-Мартен",
+    badge: "Главный герой",
+    badgeType: "hero",
+    img: "img/characters/character_luca.jpg",
+    desc: "Главный герой, монах-исследователь. Работает над чертежами и записями в скриптории при свече. Пришелец из будущего, вооружённый законами естественных наук, спасающий обитель от средневекового мора и голода.",
+    quote: "«Lumen in tenebris sine flamma — Свет во тьме без испепеляющего пламени. Знание должно созидать, а не сжигать.»",
+    relation: "Твой герой, твой путь и наследие Сен-Дени"
   }
 ];
 
@@ -3421,17 +3503,26 @@ function renderCodex(){
   } else {
     body.innerHTML = `
       <div class="codex-subdesc">
-        Исторические свидетельства и досье на ключевых лиц, чьи решения влияют на судьбу Брата Луки и обители Сен-Дени.
+        Исторические свидетельства и досье на ключевых лиц, чьи решения влияют на судьбу Брата Луки и обители Сен-Дени. Нажмите на карточку, чтобы рассмотреть гравюру и подробные сведения.
       </div>
       <div class="codex-persons-list">
         ${CODEX_CHARACTERS.map(c=>`
-          <div class="codex-person-card">
-            <div class="codex-person-head">
-              <div class="codex-person-meta">
-                <div class="codex-person-name">${c.name}</div>
-                <div class="codex-person-title">${c.title}</div>
+          <div class="codex-person-card" onclick="openPersonDlg('${c.id}')" title="Нажмите, чтобы рассмотреть гравюру и досье ${c.name}">
+            <div class="codex-person-top">
+              <div class="codex-person-avatar-frame">
+                <img class="codex-person-avatar" src="${c.img}" alt="${c.name}">
+                <div class="codex-person-zoom-hint">${iconSvg('lens', '', 10)}</div>
               </div>
-              <span class="codex-person-badge ${c.badgeType}">${c.badge}</span>
+              <div class="codex-person-main">
+                <div class="codex-person-head">
+                  <div class="codex-person-meta">
+                    <div class="codex-person-name">${c.name}</div>
+                    <div class="codex-person-title">${c.title}</div>
+                    <div class="codex-person-order">${c.order}</div>
+                  </div>
+                  <span class="codex-person-badge ${c.badgeType}">${c.badge}</span>
+                </div>
+              </div>
             </div>
             <div class="codex-person-desc">${c.desc}</div>
             <div class="codex-person-quote">${c.quote}</div>
@@ -3492,6 +3583,29 @@ function closeRelicDlg(){ $("relicDlg").classList.remove("active"); }
 
 function openPortraitDlg(){ AudioEngine.playParchment(); $("portraitDlg").classList.add("active"); }
 function closePortraitDlg(){ $("portraitDlg").classList.remove("active"); }
+
+function openPersonDlg(id){
+  AudioEngine.playParchment();
+  const c = CODEX_CHARACTERS.find(x=>x.id===id || (id==="toma" && x.id==="thomas") || (id==="raimund" && x.id==="raymond"));
+  if(!c) return;
+  if($("personDlgImg")){ $("personDlgImg").src = c.img; $("personDlgImg").alt = c.name; }
+  if($("personDlgBadge")){ $("personDlgBadge").textContent = c.badge; $("personDlgBadge").className = `codex-person-badge ${c.badgeType}`; }
+  if($("personDlgName")) $("personDlgName").textContent = c.name;
+  if($("personDlgTitle")) $("personDlgTitle").textContent = c.title;
+  if($("personDlgOrder")) $("personDlgOrder").textContent = c.order;
+  if($("personDlgDesc")) $("personDlgDesc").textContent = c.desc;
+  if($("personDlgQuote")) $("personDlgQuote").textContent = c.quote;
+  if($("personDlgRelText")) $("personDlgRelText").innerHTML = `<strong>Отношение к Луке:</strong> ${c.relation}`;
+  const dlg = $("personDlg");
+  if(dlg){
+    renderIcons(dlg);
+    dlg.classList.add("active");
+  }
+}
+function closePersonDlg(){
+  const dlg = $("personDlg");
+  if(dlg) dlg.classList.remove("active");
+}
 
 function openStatsInfoDlg(){
   AudioEngine.playParchment();
