@@ -214,27 +214,37 @@ svg.pix{shape-rendering:geometricPrecision;width:16px;height:16px;flex-shrink:0}
   line-height:1;
 }
 
+.ghead-sound-group{
+  display:inline-flex;
+  align-items:center;
+  gap:2px;
+  background:rgba(0,0,0,.3);
+  padding:2px;
+  border-radius:5px;
+  border:1px solid rgba(183,154,86,.22);
+}
 .ghead-sound-btn{
   background:transparent;
-  border:1px solid rgba(183,154,86,.28);
+  border:1px solid transparent;
   color:var(--gold);
   border-radius:4px;
   cursor:pointer;
-  padding:2px 6px;
+  padding:2px 5px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  transition:all .2s ease;
+  transition:all .18s ease;
   user-select:none;
-  min-height:22px;
+  min-height:20px;
 }
 .snd-svg-ic{
   width:12px;
   height:12px;
   display:block;
 }
-.ghead-sound-btn:hover{background:var(--surface-hi);border-color:var(--border-lit);transform:scale(1.08)}
-.ghead-sound-btn.muted{border-color:rgba(255,255,255,.08);color:var(--text-faint);opacity:.6;transform:none}
+.ghead-sound-btn:hover{background:rgba(183,154,86,.15);border-color:rgba(183,154,86,.35);color:var(--gold-bright);transform:scale(1.06)}
+.ghead-sound-btn.muted{border-color:transparent;color:var(--text-faint);opacity:.65;transform:none}
+.ghead-sound-btn.muted:hover{opacity:1;color:var(--gold)}
 
 /* Всплывающие микро-дельты (+1 / -1) */
 .stat-delta{
@@ -943,6 +953,69 @@ nav button.on{color:var(--gold)}
 .loc-dlg-history-head{font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;display:flex;align-items:center;gap:6px}
 .loc-dlg-history p{font-family:'Spectral',Georgia,serif;font-size:12.5px;color:var(--text);line-height:1.5}
 
+/* ==================== МОДАЛЬНОЕ ОКНО НАСТРОЙКИ ЗВУКОВ ==================== */
+.sound-dlg-box{max-width:390px;text-align:left;padding:20px 20px 22px}
+.sound-master-card{
+  background:rgba(183,154,86,.06);border:1px solid rgba(183,154,86,.25);border-radius:8px;
+  padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;transition:all .2s;
+}
+.sound-master-card.active{background:rgba(183,154,86,.12);border-color:var(--gold)}
+.sound-master-info{display:flex;flex-direction:column;gap:2px}
+.sound-master-title{font-family:'Spectral',Georgia,serif;font-size:15px;font-weight:600;color:var(--text);line-height:1.2}
+.sound-master-sub{font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;color:var(--text-faint);line-height:1.3}
+
+.sound-channel-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.sound-channel-item{
+  background:var(--surface);border:1px solid var(--border-soft);border-radius:8px;
+  padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;transition:all .18s;
+}
+.sound-channel-item:hover{border-color:rgba(183,154,86,.35);background:var(--surface-hi)}
+.sound-channel-item.disabled-channel .sound-channel-text{opacity:.6}
+.sound-channel-item.disabled-channel .sound-channel-ic{opacity:.6}
+.sound-channel-left{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0}
+.sound-channel-ic{
+  width:28px;height:28px;border-radius:6px;background:rgba(183,154,86,.08);border:1px solid rgba(183,154,86,.22);
+  display:flex;align-items:center;justify-content:center;color:var(--gold);flex:none;margin-top:1px;
+}
+.sound-channel-ic svg{width:14px;height:14px}
+.sound-channel-text{display:flex;flex-direction:column;gap:2px}
+.sound-channel-name{font-family:'Spectral',Georgia,serif;font-size:14px;font-weight:600;color:var(--text);line-height:1.2}
+.sound-channel-desc{font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;color:var(--text-dim);line-height:1.35}
+.sound-channel-actions{display:flex;align-items:center;gap:8px;flex:none}
+.sound-preview-btn{
+  background:rgba(183,154,86,.12);border:1px solid rgba(183,154,86,.32);color:var(--gold-bright);border-radius:5px;
+  height:24px;padding:0 7px;display:inline-flex;align-items:center;gap:4.5px;cursor:pointer;transition:all .18s;
+  font-family:'IBM Plex Sans',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none;
+}
+.sound-preview-btn:hover{background:rgba(183,154,86,.25);border-color:var(--gold);color:#fff;transform:scale(1.04)}
+.sound-preview-btn svg{width:9px;height:9px;display:block;flex:none}
+
+/* Переключатель в средневековом стиле */
+.med-switch{position:relative;display:inline-block;width:36px;height:20px;flex:none}
+.med-switch input{opacity:0;width:0;height:0}
+.med-slider{
+  position:absolute;cursor:pointer;inset:0;background:#121815;border:1px solid rgba(183,154,86,.3);
+  transition:.25s ease;border-radius:20px;box-shadow:inset 0 1px 3px rgba(0,0,0,.6);
+}
+.med-slider:before{
+  position:absolute;content:"";height:14px;width:14px;left:2px;bottom:2px;background:var(--text-faint);
+  transition:.25s ease;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.5);
+}
+.med-switch input:checked + .med-slider{background:rgba(183,154,86,.28);border-color:var(--gold)}
+.med-switch input:checked + .med-slider:before{transform:translateX(16px);background:var(--gold-bright);box-shadow:0 0 6px rgba(227,168,87,.6)}
+
+.sound-dlg-quick-row{display:flex;justify-content:space-between;align-items:center;padding:0 2px;margin-bottom:12px}
+.sound-dlg-quick-link{font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;color:var(--gold-dim);background:none;border:none;cursor:pointer;padding:0;transition:color .15s}
+.sound-dlg-quick-link:hover{color:var(--gold-bright);text-decoration:underline}
+
+/* Кнопка на титульном экране */
+.title-sound-btn{
+  background:rgba(0,0,0,.35);border:1px solid rgba(183,154,86,.25);color:var(--gold);border-radius:6px;
+  padding:5px 12px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;transition:all .2s;margin-top:10px;
+}
+.title-sound-btn:hover{border-color:var(--gold);background:rgba(183,154,86,.1);color:var(--gold-bright)}
+.title-sound-btn svg{width:13px;height:13px}
+
 /* ============ ОБЕТЫ ЗОДЧЕГО (ДОСТИЖЕНИЯ — ЗОЛОТОЕ ТИСНЕНИЕ) ============ */
 .achievements-grid{display:grid;grid-template-columns:repeat(2, 1fr);gap:9px}
 .ach-card{background:linear-gradient(145deg, rgba(23,34,28,.85), rgba(12,18,15,.95));
@@ -1003,6 +1076,10 @@ nav button.on{color:var(--gold)}
       <div class="yr">Аббатство Сен-Дени · 1180</div>
       <button class="btn" id="btnContinue" style="display:none;max-width:290px" onclick="continueGame()">Продолжить путь</button>
       <button class="btn" id="btnNew" onclick="askNewGame()">Начать путь</button>
+      <button class="title-sound-btn" id="titleSoundBtn" onclick="openSoundSettingsDlg()" title="Настройка звуков обители">
+        <span id="titleSoundIcon"><span class="snd-svg-ic" data-ic="bellOff"></span></span>
+        <span id="titleSoundLabel">Звук: Выключен (Настроить)</span>
+      </button>
       <a href="case.html" class="btn" style="background:transparent;border:1px solid rgba(183,154,86,.3);color:var(--gold-bright);text-decoration:none;display:none;align-items:center;justify-content:center;gap:6px;font-size:12px;margin-top:6px;max-width:290px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         <span>Кейс в портфолио</span>
@@ -1083,9 +1160,14 @@ nav button.on{color:var(--gold)}
               <span class="stat-delta" id="deltaInfluence"></span>
             </div>
           </div>
-          <button class="ghead-sound-btn" id="sndToggle" onclick="AudioEngine.toggleSound()" title="Звук обители (вкл / выкл)" aria-label="Звук обители">
-            <span id="sndIcon"><span class="snd-svg-ic" data-ic="bell"></span></span>
-          </button>
+          <div class="ghead-sound-group">
+            <button class="ghead-sound-btn" id="sndToggle" onclick="AudioEngine.toggleSound()" title="Звук обители (вкл / выкл)" aria-label="Звук обители">
+              <span id="sndIcon"><span class="snd-svg-ic" data-ic="bellOff"></span></span>
+            </button>
+            <button class="ghead-sound-btn" id="sndSettingsBtn" onclick="openSoundSettingsDlg()" title="Настройка звуков обители" aria-label="Настройка звуков">
+              <span class="snd-svg-ic" data-ic="sliders"></span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1382,6 +1464,46 @@ nav button.on{color:var(--gold)}
 
       <div class="dbtns" style="margin-top:16px">
         <button class="ok" onclick="closeStatsInfoDlg()">Понятно</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно настройки звуков обители -->
+  <div class="dlgwrap" id="soundSettingsDlg" onclick="if(event.target===this)closeSoundSettingsDlg()">
+    <div class="dlg sound-dlg-box">
+      <div class="relic-dlg-top">
+        <div class="relic-dlg-icon" style="background:rgba(201,169,98,.12);border-color:rgba(201,169,98,.3);color:var(--gold-bright)">
+          <span class="ic" data-ic="sliders" style="width:20px;height:20px"></span>
+        </div>
+        <div class="relic-dlg-badge">Акустика Сен-Дени</div>
+      </div>
+      <div class="dt" style="font-size:18px;margin-bottom:2px;text-align:left">Звуки обители</div>
+      <div class="relic-dlg-sub" style="margin-bottom:14px;text-align:left">Настройка колоколов, свитков и фоновой атмосферы</div>
+
+      <!-- Главный выключатель -->
+      <div class="sound-master-card" id="soundMasterCard">
+        <div class="sound-master-info">
+          <span class="sound-master-title" id="soundMasterTitle">Общий звук игры</span>
+          <span class="sound-master-sub" id="soundMasterSub">Включить или заглушить все эффекты</span>
+        </div>
+        <label class="med-switch" title="Общий звук игры">
+          <input type="checkbox" id="chkMasterSound" onchange="toggleMasterSound(this.checked)">
+          <span class="med-slider"></span>
+        </label>
+      </div>
+
+      <!-- Список каналов -->
+      <div class="sound-channel-list" id="soundChannelsList">
+        <!-- Заполняется функцией renderSoundSettingsUI() -->
+      </div>
+
+      <div class="sound-dlg-quick-row">
+        <button type="button" class="sound-dlg-quick-link" onclick="setAllSoundChannels(true)">Включить все</button>
+        <button type="button" class="sound-dlg-quick-link" onclick="setAllSoundChannels(false)">Выключить все</button>
+      </div>
+
+      <div class="dbtns" style="margin-top:12px">
+        <button class="ok" onclick="closeSoundSettingsDlg()">Сохранить и закрыть</button>
       </div>
     </div>
   </div>
@@ -2374,7 +2496,9 @@ const ICONS = {
   rosary: '<circle cx="12" cy="6" r="3" fill="currentColor"/><path fill="currentColor" d="M11 11h2v10h-2z"/><path fill="currentColor" d="M8 14h8v2H8z"/><circle cx="6" cy="11" r="1.5" fill="currentColor"/><circle cx="18" cy="11" r="1.5" fill="currentColor"/><circle cx="7" cy="16" r="1.5" fill="currentColor"/><circle cx="17" cy="16" r="1.5" fill="currentColor"/>',
   sparkle: '<path fill="currentColor" d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/>',
   flask: '<path fill="currentColor" fill-rule="evenodd" d="M9 2h6v2h-1v5.2l4.8 8.8A2 2 0 0 1 17 21H7a2 2 0 0 1-1.8-3l4.8-8.8V4H9V2zm3 9.5-3.3 6h6.6L12 11.5z"/>',
-  quill: '<path fill="currentColor" d="M21 2S14.5 4.5 10 9c-3 3-5 7-5 7l3 1s4-2 7-5c4.5-4.5 6-10 6-10zM5.5 18.5 4 21l3-1.5z"/>'
+  quill: '<path fill="currentColor" d="M21 2S14.5 4.5 10 9c-3 3-5 7-5 7l3 1s4-2 7-5c4.5-4.5 6-10 6-10zM5.5 18.5 4 21l3-1.5z"/>',
+  sliders: '<path fill="currentColor" fill-rule="evenodd" d="M3 6h4.1a3 3 0 0 0 5.8 0H21V4H12.9a3 3 0 0 0-5.8 0H3v2zm7-2a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm11 7h-9.1a3 3 0 0 0-5.8 0H3v2h4.1a3 3 0 0 0 5.8 0H21v-2zm-12 2a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm12 5h-4.1a3 3 0 0 0-5.8 0H3v2h10.1a3 3 0 0 0 5.8 0H21v-2zm-7 2a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>',
+  play: '<path fill="currentColor" d="M8 5v14l11-7L8 5z"/>'
 };
 
 function iconSvg(name, cls = '', size = null) {
@@ -3138,6 +3262,21 @@ function renderPanel(id){
             </div>
           `).join("") : `<div class="empty-traits">Твои решения пока не оставили глубокого следа.</div>`}
         </div>
+
+        <!-- Звуки обители -->
+        <div class="char-section-title">Акустика и звуки обители</div>
+        <div class="char-origin-card clickable" onclick="openSoundSettingsDlg()" style="cursor:pointer" title="Нажмите, чтобы настроить звуки обители">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="char-relic-icon"><span class="ic" data-ic="sliders"></span></div>
+              <div>
+                <div class="char-relic-name">Настройка колоколов и свитков</div>
+                <div class="char-relic-sub" id="charSoundStatus">Звук: ${AudioEngine.isSoundMuted() ? "Выключен" : "Включен"}</div>
+              </div>
+            </div>
+            <span class="char-info-btn">Настроить</span>
+          </div>
+        </div>
       </div>
     `;
     renderIcons();
@@ -3621,9 +3760,18 @@ function closeStatsInfoDlg(){ $("statsInfoDlg").classList.remove("active"); }
 const AudioEngine = (function(){
   let ctx = null;
   let masterGain = null;
-  let isMuted = false;
+  let isMuted = true; // Звук по умолчанию ВЫКЛЮЧЕН
   let currentChapterPrefix = null;
   let noiseBuffer = null;
+  let ambientNodes = null;
+
+  const DEFAULT_CHANNELS = {
+    bells: true,
+    parchment: true,
+    quill: true,
+    ambient: false
+  };
+  let channels = Object.assign({}, DEFAULT_CHANNELS);
 
   function getContext(){
     if(!ctx){
@@ -3649,7 +3797,60 @@ const AudioEngine = (function(){
 
   function init(){
     const saved = localStorage.getItem("arch_audio_enabled");
-    isMuted = (saved === "0");
+    // По умолчанию для нового игрока звук ВЫКЛЮЧЕН (isMuted = true)
+    isMuted = (saved === null ? true : saved === "0");
+
+    const savedChannels = localStorage.getItem("arch_audio_channels");
+    if(savedChannels){
+      try {
+        channels = Object.assign({}, DEFAULT_CHANNELS, JSON.parse(savedChannels));
+      } catch(e){}
+    }
+    updateUI();
+  }
+
+  function isSoundMuted(){
+    return isMuted;
+  }
+
+  function setMuted(val){
+    isMuted = !!val;
+    localStorage.setItem("arch_audio_enabled", isMuted ? "0" : "1");
+    const c = getContext();
+    if(masterGain && c){
+      masterGain.gain.setValueAtTime(isMuted ? 0 : 1, c.currentTime);
+    }
+    if(isMuted){
+      stopAmbient();
+    } else if(channels.ambient){
+      startAmbient();
+    }
+    updateUI();
+  }
+
+  function getChannels(){
+    return Object.assign({}, channels);
+  }
+
+  function setChannel(name, val){
+    if(channels.hasOwnProperty(name)){
+      channels[name] = !!val;
+      localStorage.setItem("arch_audio_channels", JSON.stringify(channels));
+      if(name === "ambient"){
+        if(channels.ambient && !isMuted) startAmbient();
+        else stopAmbient();
+      }
+      updateUI();
+    }
+  }
+
+  function setAllChannels(val){
+    for(const k of Object.keys(channels)){
+      channels[k] = !!val;
+    }
+    localStorage.setItem("arch_audio_channels", JSON.stringify(channels));
+    if(!channels.ambient || isMuted) stopAmbient();
+    else startAmbient();
     updateUI();
   }
 
@@ -3661,24 +3862,31 @@ const AudioEngine = (function(){
       btn.classList.toggle("muted", isMuted);
       btn.title = isMuted ? "Звуковые эффекты выключены (нажмите, чтобы включить)" : "Звуковые эффекты включены (нажмите, чтобы выключить)";
     }
+    const tIcon = $("titleSoundIcon");
+    const tLabel = $("titleSoundLabel");
+    if(tIcon) tIcon.innerHTML = iconSvg(isMuted ? "bellOff" : "bell", "snd-svg-ic", 13);
+    if(tLabel) tLabel.textContent = `Звук: ${isMuted ? "Выключен" : "Включен"} (Настроить)`;
+
+    const charSoundStatus = $("charSoundStatus");
+    if(charSoundStatus) charSoundStatus.textContent = `Звук: ${isMuted ? "Выключен" : "Включен"}`;
+
+    const dlg = $("soundSettingsDlg");
+    if(dlg && dlg.classList.contains("active")){
+      renderSoundSettingsUI();
+    }
   }
 
   function toggleSound(){
-    const c = getContext();
-    isMuted = !isMuted;
-    localStorage.setItem("arch_audio_enabled", isMuted ? "0" : "1");
-    if(masterGain && c){
-      masterGain.gain.setValueAtTime(isMuted ? 0 : 1, c.currentTime);
+    const willBeMuted = !isMuted;
+    setMuted(willBeMuted);
+    if(!willBeMuted && channels.bells){
+      playBell(1.05, 0.4);
     }
-    if(!isMuted){
-      playParchment();
-    }
-    updateUI();
   }
 
   /* 1. Глубокий колокол Сен-Дени (синтез гармоник) */
-  function playBell(pitchScale = 1.0, masterVol = 0.5){
-    if(isMuted) return;
+  function playBell(pitchScale = 1.0, masterVol = 0.5, force = false){
+    if(!force && (isMuted || !channels.bells)) return;
     const c = getContext();
     if(!c) return;
 
@@ -3738,8 +3946,8 @@ const AudioEngine = (function(){
   }
 
   /* 2. Шуршание пергамента */
-  function playParchment(){
-    if(isMuted) return;
+  function playParchment(force = false){
+    if(!force && (isMuted || !channels.parchment)) return;
     const c = getContext();
     if(!c || !noiseBuffer) return;
 
@@ -3767,8 +3975,8 @@ const AudioEngine = (function(){
   }
 
   /* 3. Щелчок пера / печать */
-  function playQuill(){
-    if(isMuted) return;
+  function playQuill(force = false){
+    if(!force && (isMuted || !channels.quill)) return;
     const c = getContext();
     if(!c) return;
 
@@ -3811,9 +4019,98 @@ const AudioEngine = (function(){
     }
   }
 
-  /* 4. Фоновая музыка отключена: оставлены только процедурные эффекты действий */
-  function startDrone(){}
-  function stopDrone(){}
+  /* 4. Процедурный медитативный эмбиент каменных сводов */
+  function startAmbient(){
+    if(isMuted || !channels.ambient) return;
+    const c = getContext();
+    if(!c || ambientNodes) return;
+    try {
+      const osc1 = c.createOscillator();
+      const osc2 = c.createOscillator();
+      const filter = c.createBiquadFilter();
+      const gain = c.createGain();
+
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(55, c.currentTime); // нота A1
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(82.4, c.currentTime); // квинта E2
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(160, c.currentTime);
+
+      gain.gain.setValueAtTime(0.001, c.currentTime);
+      gain.gain.linearRampToValueAtTime(0.035, c.currentTime + 3.0);
+
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(gain);
+      gain.connect(masterGain);
+
+      osc1.start();
+      osc2.start();
+      ambientNodes = { osc1, osc2, gain, filter };
+    } catch(e){}
+  }
+
+  function stopAmbient(){
+    if(!ambientNodes) return;
+    const c = getContext();
+    try {
+      if(c && ambientNodes.gain){
+        ambientNodes.gain.gain.linearRampToValueAtTime(0.0001, c.currentTime + 0.8);
+        setTimeout(()=>{
+          if(ambientNodes){
+            try { ambientNodes.osc1.stop(); ambientNodes.osc2.stop(); } catch(e){}
+            ambientNodes = null;
+          }
+        }, 900);
+      } else {
+        ambientNodes = null;
+      }
+    } catch(e){ ambientNodes = null; }
+  }
+
+  function playAmbientPreview(){
+    const c = getContext();
+    if(!c) return;
+    try {
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(110, c.currentTime);
+      gain.gain.setValueAtTime(0.001, c.currentTime);
+      gain.gain.linearRampToValueAtTime(0.08, c.currentTime + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 1.2);
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(c.currentTime);
+      osc.stop(c.currentTime + 1.25);
+    } catch(e){}
+  }
+
+  function previewSound(type){
+    const c = getContext();
+    if(!c) return;
+    if(c.state === "suspended"){
+      c.resume().catch(()=>{});
+    }
+    const wasMuted = isMuted;
+    if(masterGain){
+      masterGain.gain.setValueAtTime(1, c.currentTime);
+    }
+    if(type === "bells") playBell(1.0, 0.5, true);
+    else if(type === "parchment") playParchment(true);
+    else if(type === "quill") playQuill(true);
+    else if(type === "ambient") playAmbientPreview();
+
+    if(wasMuted && masterGain){
+      setTimeout(()=>{
+        if(isMuted && c && masterGain){
+          masterGain.gain.setValueAtTime(0, c.currentTime);
+        }
+      }, 700);
+    }
+  }
 
   function onChapterEnter(chapTitle){
     if(!chapTitle) return;
@@ -3829,21 +4126,130 @@ const AudioEngine = (function(){
     }
   }
 
-  function onVisibilityChange(){}
+  function onVisibilityChange(){
+    if(document.hidden){
+      stopAmbient();
+    } else if(!isMuted && channels.ambient){
+      startAmbient();
+    }
+  }
 
   return {
     init,
     getContext,
+    isSoundMuted,
+    setMuted,
     toggleSound,
+    getChannels,
+    setChannel,
+    setAllChannels,
+    previewSound,
     playBell,
     playParchment,
     playQuill,
-    startDrone,
-    stopDrone,
+    startAmbient,
+    stopAmbient,
     onChapterEnter,
     onVisibilityChange
   };
 })();
+
+/* ============ ДИАЛОГ НАСТРОЙКИ ЗВУКОВ ОБИТЕЛИ ============ */
+const SOUND_CHANNEL_DEFS = [
+  {
+    id: "bells",
+    name: "Колокола Сен-Дени",
+    desc: "Звон при начале пути, смене глав летописи и ключевых событиях",
+    ic: "bell"
+  },
+  {
+    id: "parchment",
+    name: "Шорох пергамента",
+    desc: "Шелест рукописей при открытии летописи, кодекса, карт и досье",
+    ic: "scroll"
+  },
+  {
+    id: "quill",
+    name: "Перо писца",
+    desc: "Скрип гусиного пера при выборе решений братом Лукой",
+    ic: "quill"
+  },
+  {
+    id: "ambient",
+    name: "Своды собора (Эмбиент)",
+    desc: "Тихий медитативный резонанс древних каменных стен обители",
+    ic: "church"
+  }
+];
+
+function renderSoundSettingsUI(){
+  const isMuted = AudioEngine.isSoundMuted();
+  const chs = AudioEngine.getChannels();
+
+  const card = $("soundMasterCard");
+  const chk = $("chkMasterSound");
+  const title = $("soundMasterTitle");
+  const sub = $("soundMasterSub");
+  if(card) card.classList.toggle("active", !isMuted);
+  if(chk) chk.checked = !isMuted;
+  if(title) title.textContent = !isMuted ? "Общий звук игры: Включен" : "Общий звук игры: Выключен";
+  if(sub) sub.textContent = !isMuted ? "Все выбранные звуки обители активны" : "Звуковые эффекты заглушены (нажмите переключатель, чтобы включить)";
+
+  const list = $("soundChannelsList");
+  if(list){
+    list.innerHTML = SOUND_CHANNEL_DEFS.map(d => {
+      const isEnabled = !!chs[d.id];
+      return `
+        <div class="sound-channel-item ${isMuted ? 'disabled-channel' : ''}">
+          <div class="sound-channel-left">
+            <div class="sound-channel-ic">${iconSvg(d.ic, '', 14)}</div>
+            <div class="sound-channel-text">
+              <div class="sound-channel-name">${d.name}</div>
+              <div class="sound-channel-desc">${d.desc}</div>
+            </div>
+          </div>
+          <div class="sound-channel-actions">
+            <button type="button" class="sound-preview-btn" onclick="AudioEngine.previewSound('${d.id}')" title="Прослушать ${d.name}">
+              ${iconSvg('play', '', 10)}
+              <span>Тест</span>
+            </button>
+            <label class="med-switch" title="${d.name}">
+              <input type="checkbox" ${isEnabled ? 'checked' : ''} onchange="toggleSoundChannel('${d.id}', this.checked)">
+              <span class="med-slider"></span>
+            </label>
+          </div>
+        </div>
+      `;
+    }).join("");
+    renderIcons(list);
+  }
+}
+
+function openSoundSettingsDlg(){
+  AudioEngine.playParchment();
+  renderSoundSettingsUI();
+  const dlg = $("soundSettingsDlg");
+  if(dlg){
+    renderIcons(dlg);
+    dlg.classList.add("active");
+  }
+}
+function closeSoundSettingsDlg(){
+  const dlg = $("soundSettingsDlg");
+  if(dlg) dlg.classList.remove("active");
+}
+function toggleMasterSound(checked){
+  AudioEngine.setMuted(!checked);
+  renderSoundSettingsUI();
+}
+function toggleSoundChannel(name, checked){
+  AudioEngine.setChannel(name, checked);
+  renderSoundSettingsUI();
+}
+function setAllSoundChannels(enabled){
+  AudioEngine.setAllChannels(enabled);
+  renderSoundSettingsUI();
+}
 
 window.addEventListener("keydown", e => {
   if(e.key === "Escape"){
@@ -3851,6 +4257,9 @@ window.addEventListener("keydown", e => {
     closeAchDlg();
     closeRelicDlg();
     closePortraitDlg();
+    closePersonDlg();
+    closeSoundSettingsDlg();
+    closeStatsInfoDlg();
     closeDlg();
     closePanels();
   }
@@ -3858,6 +4267,7 @@ window.addEventListener("keydown", e => {
   if(e.key === "h" || e.key === "р") openPanel('p-char');
   if(e.key === "c" || e.key === "с") openPanel('p-codex');
   if(e.key === "m" || e.key === "ь") AudioEngine.toggleSound();
+  if(e.key === "M" || e.key === "Ь") openSoundSettingsDlg();
 });
 
 document.addEventListener("visibilitychange", ()=>{
@@ -3867,10 +4277,17 @@ document.addEventListener("visibilitychange", ()=>{
 /* ============ ДИАЛОГ / СТАРТ ============ */
 function askNewGame(){
   const saved = loadSave();
-  if(!saved) return showPrologue();
+  if(!saved) {
+    AudioEngine.setMuted(true);
+    return showPrologue();
+  }
   $("dlgTitle").textContent="Начать заново?";
   $("dlgMsg").textContent="Сохранённый путь брата Луки будет утерян безвозвратно.";
-  $("dlgOk").onclick=()=>{ closeDlg(); showPrologue(); };
+  $("dlgOk").onclick=()=>{
+    closeDlg();
+    AudioEngine.setMuted(true);
+    showPrologue();
+  };
   $("dlg").classList.add("active");
 }
 function closeDlg(){ $("dlg").classList.remove("active"); }
@@ -3878,11 +4295,13 @@ function showPrologue(){
   show("scr-prologue");
 }
 function startFromPrologue(){
-  AudioEngine.playBell(1.0, 0.5);
+  AudioEngine.setMuted(true);
   newGame();
 }
 function newGame(){
   S = newState();
+  // По умолчанию для новой игры звук выключен
+  AudioEngine.setMuted(true);
   renderScene(S.sceneId);
 }
 function continueGame(){
