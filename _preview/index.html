@@ -465,39 +465,48 @@ svg.pix{shape-rendering:geometricPrecision;width:16px;height:16px;flex-shrink:0}
 
 .flagsrow{display:none}
 
-/* Всплывающие тосты отметок истории */
+/* Всплывающие тосты отметок истории (размещены вверху, чтобы не перекрывать кнопки действий) */
 .toast-container{
   position:fixed;
-  bottom:74px;
+  top:calc(16px + var(--safe-top));
   left:50%;
   transform:translateX(-50%);
-  z-index:100;
+  z-index:1000;
   display:flex;
   flex-direction:column;
   gap:8px;
   pointer-events:none;
   width:90%;
-  max-width:360px;
+  max-width:380px;
 }
 .history-toast{
   background:rgba(14, 22, 18, 0.96);
   border:1px solid var(--border-lit);
   color:var(--text);
   font-family:'IBM Plex Sans',sans-serif;
-  font-size:11.5px;
-  padding:8px 14px;
-  border-radius:6px;
-  box-shadow:0 8px 24px rgba(0,0,0,.6), 0 0 12px rgba(183,154,86,.2);
+  font-size:12px;
+  padding:10px 16px;
+  border-radius:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,.6), 0 0 14px rgba(183,154,86,.25);
   display:flex;
   align-items:center;
-  gap:8px;
-  animation:toastSlideUp .3s cubic-bezier(.2,.8,.2,1);
-  transition:opacity .4s ease, transform .4s ease;
+  justify-content:space-between;
+  gap:10px;
+  pointer-events:auto;
+  cursor:pointer;
+  animation:toastSlideDown .3s cubic-bezier(.2,.8,.2,1);
+  transition:opacity .3s ease, transform .3s ease;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
 }
+.history-toast:hover{border-color:var(--gold)}
+.history-toast-content{display:flex;align-items:center;gap:8px}
+.history-toast-close{color:var(--text-faint);font-size:15px;line-height:1;padding:2px 4px;opacity:.6;transition:opacity .2s;flex:none}
+.history-toast:hover .history-toast-close{opacity:1;color:var(--gold)}
 .history-toast b{color:var(--gold-bright)}
-.history-toast.fade-out{opacity:0;transform:translateY(-8px)}
-@keyframes toastSlideUp{
-  from{opacity:0;transform:translateY(12px)}
+.history-toast.fade-out{opacity:0;transform:translateY(-10px)}
+@keyframes toastSlideDown{
+  from{opacity:0;transform:translateY(-14px)}
   to{opacity:1;transform:translateY(0)}
 }
 
@@ -684,7 +693,7 @@ h1.scenetitle{font-family:'Spectral',Georgia,serif;font-weight:400;font-size:24p
   padding:14px 18px;margin-top:auto;transition:background .17s,border-color .17s,box-shadow .17s,transform .12s;cursor:pointer}
 .btn:hover{border-color:var(--gold);background:var(--surface-hi2);box-shadow:0 2px 12px rgba(183,154,86,.15)}
 .btn:active{transform:scale(0.985);background:var(--surface-hi2)}
-.btn.top{margin:28px 20px 20px;width:calc(100% - 40px)}
+.btn.top{margin:28px 20px 20px;width:calc(100% - 40px);position:relative;z-index:20}
 .btn.ghost{background:transparent;border-color:var(--border-soft);color:var(--text-faint);margin-top:12px;font-size:10px}
 
 #btnNew{background:var(--surface-hi);border-color:var(--gold);color:var(--gold-bright);
@@ -3140,12 +3149,24 @@ function showHistoryToast(flagName){
   }
   const toast = document.createElement("div");
   toast.className = "history-toast";
-  toast.innerHTML = `<span class="toast-ic">${iconSvg('scroll', '', 14)}</span> <span>Отмечено: <b>${flagName}</b></span>`;
+  toast.title = "Нажмите, чтобы скрыть";
+  toast.innerHTML = `<div class="history-toast-content"><span class="toast-ic">${iconSvg('scroll', '', 14)}</span> <span>Отмечено: <b>${flagName}</b></span></div><span class="history-toast-close" title="Закрыть">&times;</span>`;
+  toast.onclick = function(){
+    toast.classList.add("fade-out");
+    setTimeout(()=> toast.remove(), 250);
+  };
   container.appendChild(toast);
   setTimeout(()=>{
-    toast.classList.add("fade-out");
-    setTimeout(()=> toast.remove(), 400);
-  }, 3200);
+    if(toast.parentNode){
+      toast.classList.add("fade-out");
+      setTimeout(()=> toast.remove(), 350);
+    }
+  }, 2800);
+}
+
+function clearHistoryToasts(){
+  const container = $("toastContainer");
+  if(container) container.innerHTML = "";
 }
 
 /* ============ РЕНДЕР СЦЕНЫ ============ */
@@ -3192,7 +3213,7 @@ function renderScene(id, {record = true} = {}){
 
   checkAchievements(S);
   if(sc && !sc.isRandomEvent && sc.chapterTitle) AudioEngine.onChapterEnter(sc.chapterTitle);
-  closePanels(); renderHUD();
+  closePanels(); clearHistoryToasts(); renderHUD();
 
   if(sc.sliceEnd) return showSliceEnd(sc);
 
@@ -3443,6 +3464,7 @@ function renderEcho(ch, deltas, rankUp, riskCalmed, dynamicLead){
 }
 
 function advanceFromEcho(){
+  clearHistoryToasts();
   AudioEngine.playParchment();
   const echoScreen = $("scr-echo");
   if(echoScreen) echoScreen.classList.add("dissolving-out");
