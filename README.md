@@ -5,9 +5,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Melok90/architect-history/releases/tag/v1.21.0"><img src="https://img.shields.io/badge/релиз-v1.21.0-gold.svg?style=for-the-badge" alt="Версия 1.21.0"></a>
+  <a href="https://github.com/Melok90/architect-history/releases/tag/v1.22.0"><img src="https://img.shields.io/badge/релиз-v1.22.0-gold.svg?style=for-the-badge" alt="Версия 1.22.0"></a>
   <a href="#-тестирование-и-верификация-100-pass"><img src="https://img.shields.io/badge/тесты-100%25%20passing-brightgreen.svg?style=for-the-badge" alt="Тесты 100%"></a>
-  <img src="https://img.shields.io/badge/графика-30%20гравюр-8a6d3b.svg?style=for-the-badge" alt="30 гравюр">
+  <img src="https://img.shields.io/badge/графика-31%20гравюра-8a6d3b.svg?style=for-the-badge" alt="31 гравюра">
   <img src="https://img.shields.io/badge/стек-Vanilla%20JS%20%7C%20No--Build-2563eb.svg?style=for-the-badge" alt="No-Build">
   <img src="https://img.shields.io/badge/платформа-Web%20%7C%20Mobile--First-16a34a.svg?style=for-the-badge" alt="Mobile-First">
 </p>
@@ -80,6 +80,7 @@
 * **Каменоломни Понтуаза** (`art_quarry.jpg`)
 * **Винные погреба** (`art_cellar.jpg`)
 * **Великая засуха** (`art_drought.jpg`)
+* **Весенний паводок («Талые воды»)** (`art_flood.jpg`)
 * **Солнечное затмение 1185 года** (`art_eclipse.jpg`)
 * **Ночная буря в обители** (`art_storm.jpg`)
 * **Огни святого Антония (Эрготизм)** (`art_ergotism.jpg`)
@@ -87,7 +88,7 @@
 * *...и более 15 других сцен обители.*
 
 ### 📚 3. Интерактивный Кодекс и Глоссарий
-- **Атлас обители (22 локации):** подробные исторические очерки об архитектуре, каменоломнях, медицине и богословии света.
+- **Атлас обители (23 локации):** подробные исторические очерки об архитектуре, каменоломнях, медицине и богословии света.
 - **Персоналии:** исторические досье ключевых деятелей эпохи.
 - **Интерактивные микро-подсказки (Popover):** нажатие на термины в тексте сцен (*аркбутан, нервюра, алембик, спорынья, сервитут, хартия, денье*) мгновенно открывает пояснительную карточку с адаптивным позиционированием.
 
@@ -102,7 +103,7 @@
 
 | Этап | Инструмент | Описание | Результат |
 |---|---|---|:---:|
-| **1. Статический аудит** | `test_static_integrity.js` | 30 ассетов, 23 термина глоссария, 22 локации, 0 diff между версиями | **PASSED** |
+| **1. Статический аудит** | `test_static_integrity.js` | 31 ассет, 23 термина глоссария, 23 локации, 0 diff между версиями | **PASSED** |
 | **2. E2E Симуляция логики** | `test_logic_simulation.js` | Сквозное прохождение всех 5 глав, победа в финале, 3 аварийные концовки, 20 случайных событий | **PASSED** |
 | **3. Интерфейс и адаптивность** | `test_browser_ui.js` | Навигация, тултипы, модалки Кодекса, 0 консольных ошибок, адаптивность (Desktop, Tablet, Mobile) | **PASSED** |
 | **4. Персистентность (Save/Load)** | `test_persistence.js` | Запись в `localStorage`, восстановление после перезагрузки F5, сброс новой игры | **PASSED** |
