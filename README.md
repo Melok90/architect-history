@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Melok90/architect-history/releases/tag/v1.23.0"><img src="https://img.shields.io/badge/релиз-v1.23.0-gold.svg?style=for-the-badge" alt="Версия 1.23.0"></a>
+  <a href="https://github.com/Melok90/architect-history/releases/tag/v1.24.0"><img src="https://img.shields.io/badge/релиз-v1.24.0-gold.svg?style=for-the-badge" alt="Версия 1.24.0"></a>
   <a href="#-тестирование-и-верификация-100-pass"><img src="https://img.shields.io/badge/тесты-100%25%20passing-brightgreen.svg?style=for-the-badge" alt="Тесты 100%"></a>
   <img src="https://img.shields.io/badge/графика-32%20гравюры-8a6d3b.svg?style=for-the-badge" alt="32 гравюры">
   <img src="https://img.shields.io/badge/стек-Vanilla%20JS%20%7C%20No--Build-2563eb.svg?style=for-the-badge" alt="No-Build">
